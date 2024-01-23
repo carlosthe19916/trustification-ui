@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <% if(brandType == 'trustification'){ %>
+    <title>Trustification</title>
+    <meta name="description" content="Trustification UI" />
+    <meta id="appName" name="application-name" content="Trustification UI" />
+    <% } else{ %>
+    <title>RHTPA</title>
+    <meta name="description" content="RHTPA UI" />
+    <meta id="appName" name="application-name" content="RHTPA UI" />
+    <% } %>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="version" content="2.0.0" />
+    <link rel="manifest" href="manifest.json" />
+    <base href="/" />
+    <script>
+      window._env = "<%= _env %>";
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root" style="height: 100%"></div>
+  </body>
+</html>

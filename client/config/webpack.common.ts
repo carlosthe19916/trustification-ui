@@ -172,10 +172,10 @@ const config: Configuration = {
     }),
     new CopyPlugin({
       patterns: [
-        {
-          from: pathTo("../public/locales"),
-          to: pathTo("../dist/locales"),
-        },
+        // {
+        //   from: pathTo("../public/locales"),
+        //   to: pathTo("../dist/locales"),
+        // },
         {
           from: pathTo("../public/manifest.json"),
           to: pathTo("../dist/manifest.json"),

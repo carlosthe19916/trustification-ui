@@ -1,5 +1,4 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
 
 import {
   EmptyState,
@@ -11,15 +10,13 @@ import {
 import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon";
 
 export const StateNoResults: React.FC = () => {
-  const { t } = useTranslation();
-
   return (
     <EmptyState variant={EmptyStateVariant.sm}>
       <EmptyStateIcon icon={SearchIcon} />
       <Title headingLevel="h2" size="lg">
-        {t("message.noResultsFoundTitle")}
+        No results found
       </Title>
-      <EmptyStateBody>{t("message.noResultsFoundBody")}</EmptyStateBody>
+      <EmptyStateBody>No results found. Try a different query</EmptyStateBody>
     </EmptyState>
   );
 };

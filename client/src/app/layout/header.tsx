@@ -30,7 +30,6 @@ import QuestionCircleIcon from "@patternfly/react-icons/dist/esm/icons/question-
 import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-icon";
 import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon";
 
-import i18n from "@app/i18n";
 import { useLocalStorage } from "@app/hooks/useStorage";
 import { APP_BRAND, BrandType, isAuthRequired } from "@app/Constants";
 
@@ -50,10 +49,6 @@ export const HeaderApp: React.FC = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
 
   const [lang, setLang] = useLocalStorage({ key: "lang", defaultValue: "es" });
-
-  useEffect(() => {
-    i18n.changeLanguage(lang);
-  }, [lang]);
 
   const kebabDropdownItems = (
     <>

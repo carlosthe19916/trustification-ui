@@ -41,7 +41,7 @@ app.get("*", (_, res) => {
   if (TRUSTIFICATION_ENV.NODE_ENV === "development") {
     res.send(`
       <style>pre { margin-left: 20px; }</style>
-      You're running in development mode! The UI is served by webpack-dev-server on port 9000: <a href="http://localhost:9000">http://localhost:9000</a><br /><br />
+      You're running in development mode! The UI is served by webpack-dev-server on port 3000: <a href="http://localhost:3000">http://localhost:3000</a><br /><br />
       If you want to serve the UI via express to simulate production mode, run a full build with: <pre>npm run build</pre>
       and then in two separate terminals, run: <pre>npm run port-forward</pre> and: <pre>npm run start</pre> and the UI will be served on port 8080.
     `);

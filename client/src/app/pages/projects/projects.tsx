@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { AxiosError } from "axios";
 
 import {
@@ -35,7 +34,6 @@ import { NotificationsContext } from "@app/components/NotificationsContext";
 import { getAxiosErrorMessage } from "@app/utils/utils";
 
 export const Projects: React.FC = () => {
-  const { t } = useTranslation();
   const { pushNotification } = useContext(NotificationsContext);
 
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] =
@@ -51,7 +49,7 @@ export const Projects: React.FC = () => {
 
   const onDeleteOrgSuccess = () => {
     pushNotification({
-      title: t("terms.projectDeleted"),
+      title: "Project deleted",
       variant: "success",
     });
   };
@@ -76,8 +74,8 @@ export const Projects: React.FC = () => {
     items: projects,
     isLoading: isFetching,
     columnNames: {
-      name: t("terms.name"),
-      description: t("terms.description"),
+      name: "Name",
+      description: "Description",
     },
     hasActionsColumn: true,
     filter: {
@@ -85,12 +83,9 @@ export const Projects: React.FC = () => {
       filterCategories: [
         {
           key: "q",
-          title: t("terms.name"),
+          title: "Name",
           type: FilterType.search,
-          placeholderText:
-            t("actions.filterBy", {
-              what: t("terms.name").toLowerCase(),
-            }) + "...",
+          placeholderText: "Filter by Name...",
           getItemValue: (item) => item.name || "",
         },
       ],
@@ -136,7 +131,7 @@ export const Projects: React.FC = () => {
     <>
       <PageSection variant={PageSectionVariants.light}>
         <TextContent>
-          <Text component="h1">{t("terms.projects")}</Text>
+          <Text component="h1">Projects</Text>
         </TextContent>
       </PageSection>
       <PageSection>
@@ -157,7 +152,7 @@ export const Projects: React.FC = () => {
                     variant={ButtonVariant.primary}
                     onClick={() => setCreateUpdateModalState("create")}
                   >
-                    {t("actions.createNew")}
+                    Create new
                   </Button>
                 </ToolbarItem>
               </ToolbarGroup>
@@ -204,11 +199,11 @@ export const Projects: React.FC = () => {
                         <ActionsColumn
                           items={[
                             {
-                              title: t("actions.edit"),
+                              title: "Edit",
                               onClick: () => setCreateUpdateModalState(item),
                             },
                             {
-                              title: t("actions.delete"),
+                              title: "Delete",
                               onClick: () => deleteRow(item),
                             },
                           ]}
@@ -230,9 +225,7 @@ export const Projects: React.FC = () => {
 
       <Modal
         id="create-edit-project-modal"
-        title={t(projectToUpdate ? "dialog.title.update" : "dialog.title.new", {
-          what: t("terms.project").toLowerCase(),
-        })}
+        title={projectToUpdate ? "Update" : "Create new"}
         variant={ModalVariant.medium}
         isOpen={isCreateUpdateModalOpen}
         onClose={closeCreateUpdateModal}
@@ -245,16 +238,13 @@ export const Projects: React.FC = () => {
 
       {isConfirmDialogOpen && (
         <ConfirmDialog
-          title={t("dialog.title.deleteWithName", {
-            what: t("terms.project").toLowerCase(),
-            name: projectToDelete?.name,
-          })}
+          title="Delete"
           isOpen={true}
           titleIconVariant={"warning"}
-          message={t("dialog.message.delete")}
+          message="Are you sure you want to delete"
           confirmBtnVariant={ButtonVariant.danger}
-          confirmBtnLabel={t("actions.delete")}
-          cancelBtnLabel={t("actions.cancel")}
+          confirmBtnLabel="Delete"
+          cancelBtnLabel="Cancel"
           onCancel={() => setIsConfirmDialogOpen(false)}
           onClose={() => setIsConfirmDialogOpen(false)}
           onConfirm={() => {

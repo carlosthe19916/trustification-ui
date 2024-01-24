@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Button,
   Dropdown,
@@ -39,9 +38,6 @@ export const ToolbarBulkSelector = <T,>({
 }: React.PropsWithChildren<
   IToolbarBulkSelectorProps<T>
 >): JSX.Element | null => {
-  // i18
-  const { t } = useTranslation();
-
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleCollapseAll = (collapse: boolean) => {
@@ -83,7 +79,7 @@ export const ToolbarBulkSelector = <T,>({
       key="select-none"
       component="button"
     >
-      {t("actions.selectNone")} (0 items)
+      Select none (0 items)
     </DropdownItem>,
     <DropdownItem
       onClick={() => {
@@ -96,7 +92,7 @@ export const ToolbarBulkSelector = <T,>({
       key="select-page"
       component="button"
     >
-      {t("actions.selectPage")} ({currentPageItems.length} items)
+      Select page ({currentPageItems.length} items)
     </DropdownItem>,
     <DropdownItem
       onClick={() => {
@@ -106,7 +102,7 @@ export const ToolbarBulkSelector = <T,>({
       key="select-all"
       component="button"
     >
-      {t("actions.selectAll")} ({paginationProps.itemCount})
+      Select all ({paginationProps.itemCount})
     </DropdownItem>,
   ];
 

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 import {
@@ -27,7 +26,6 @@ import {
 import { UploadFilesDrawer } from "./upload-files-drawer";
 
 export const Projects: React.FC = () => {
-  const { t } = useTranslation();
   const { projectId } = useParams();
 
   const [uploadFilesToProjectId, setUploadFilesToProjectId] = useState<
@@ -122,7 +120,7 @@ export const Projects: React.FC = () => {
     <>
       <PageSection variant={PageSectionVariants.light}>
         <TextContent>
-          <Text component="h1">{t("terms.documents")}</Text>
+          <Text component="h1">Documents</Text>
         </TextContent>
       </PageSection>
       <PageSection>

@@ -26,7 +26,7 @@ interface Configuration extends WebpackConfiguration {
 }
 
 const devServer: DevServerConfiguration = {
-  port: 9000,
+  port: 3000,
   historyApiFallback: {
     disableDotRule: true,
   },

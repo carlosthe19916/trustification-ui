@@ -44,7 +44,7 @@ const config: JestConfigWithTsJest = {
   },
 
   // Code to set up the testing framework before each test file in the suite is executed
-  setupFilesAfterEnv: ["<rootDir>/src/app/setupTests.ts"],
+  setupFilesAfterEnv: ["<rootDir>/src/app/test-config/setupTests.ts"],
 };
 
 export default config;

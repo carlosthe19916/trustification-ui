@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
-    <% if(brandType == 'trustification'){ %>
-    <title>Trustification</title>
-    <meta name="description" content="Trustification UI" />
-    <meta id="appName" name="application-name" content="Trustification UI" />
-    <% } else{ %>
-    <title>RHTPA</title>
-    <meta name="description" content="RHTPA UI" />
-    <meta id="appName" name="application-name" content="RHTPA UI" />
-    <% } %>
+    <title><%= branding.application.title %></title>
+    <meta name="description" content="<%= branding.application.description ?? branding.application.title %>" />
+    <meta id="appName" name="application-name" content="<%= branding.application.name ?? branding.application.title %>" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />

@@ -1,15 +1,19 @@
 import path from "path";
 import { Configuration } from "webpack";
-// import CaseSensitivePathsWebpackPlugin from "case-sensitive-paths-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import { TsconfigPathsPlugin } from "tsconfig-paths-webpack-plugin";
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 
+import { brandingAssetPath } from "@trustification-ui/common";
 import { LANGUAGES_BY_FILE_EXTENSION } from "./monacoConstants";
 
-const BG_IMAGES_DIRNAME = "images";
 const pathTo = (relativePath: string) => path.resolve(__dirname, relativePath);
+
+const brandingPath = brandingAssetPath();
+const manifestPath = path.resolve(brandingPath, "manifest.json");
+
+const BG_IMAGES_DIRNAME = "images";
 
 const config: Configuration = {
   entry: {
@@ -150,17 +154,22 @@ const config: Configuration = {
           exports: "xmllint",
         },
       },
+      {
+        test: /\.yaml$/,
+        use: "raw-loader",
+      },
+
       // For monaco-editor-webpack-plugin
       {
         test: /\.css$/,
         include: [pathTo("../../node_modules/monaco-editor")],
         use: ["style-loader", "css-loader"],
       },
-      // For monaco-editor-webpack-plugin
       {
         test: /\.ttf$/,
         type: "asset/resource",
       },
+      // <--- For monaco-editor-webpack-plugin
     ],
   },
 
@@ -172,13 +181,13 @@ const config: Configuration = {
     }),
     new CopyPlugin({
       patterns: [
-        // {
-        //   from: pathTo("../public/locales"),
-        //   to: pathTo("../dist/locales"),
-        // },
         {
-          from: pathTo("../public/manifest.json"),
-          to: pathTo("../dist/manifest.json"),
+          from: manifestPath,
+          to: ".",
+        },
+        {
+          from: brandingPath,
+          to: "./branding/",
         },
       ],
     }),

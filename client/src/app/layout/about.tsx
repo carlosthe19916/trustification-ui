@@ -9,70 +9,55 @@ import {
   TextVariants,
 } from "@patternfly/react-core";
 
-import trustificationBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
-import rhtpaBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
-
 import backgroundImage from "@app/images/pfbg-icon.svg";
 
-import { APP_BRAND, BrandType } from "@app/Constants";
 import ENV from "@app/env";
+import useBranding from "@app/hooks/useBranding";
 
 interface IButtonAboutAppProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const TRANSPARENT_1x1_GIF =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw== ";
+
 export const AboutApp: React.FC<IButtonAboutAppProps> = ({
   isOpen,
   onClose,
 }) => {
-  const brandName = APP_BRAND === BrandType.Trustification ? "Trustification" : "RHTPA";
+  const { about } = useBranding();
 
   return (
     <AboutModal
       isOpen={isOpen}
       onClose={onClose}
-      productName={brandName}
+      productName={about.displayName}
       brandImageAlt="Logo"
-      brandImageSrc={
-        APP_BRAND === BrandType.Trustification ? trustificationBrandImage : rhtpaBrandImage
-      }
+      brandImageSrc={about.imageSrc ?? TRANSPARENT_1x1_GIF}
       backgroundImageSrc={backgroundImage}
       trademark="COPYRIGHT © 2022."
     >
       <TextContent>
-        <Text component={TextVariants.h4}>Acerca de</Text>
         <Text component={TextVariants.p}>
-          {brandName} es una colección de herramientas que ayudan en la
-          administración de documentos electrónicos basados en UBL (Universal
-          Busissess Language) y los estándares de la SUNAT (Perú).
+          {about.displayName} is vendor-neutral, thought-leadering, mostly
+          informational collection of resources devoted to making Software
+          Supply Chains easier to create, manage, consume and ultimately… to
+          trust!
         </Text>
-        <Text component={TextVariants.p}>
-          {brandName} Permite crear, firmar, enviar, y consultar comprobantes
-          electrónicos en la SUNAT
-        </Text>
-        <Text component={TextVariants.p}>
-          {brandName} es un proyecto de{" "}
-          <Text
-            component={TextVariants.a}
-            href="https://www.konveyor.io/"
-            target="_blank"
-          >
-            Project OpenUBL
+
+        {about.documentationUrl ? (
+          <Text component={TextVariants.p}>
+            For more information refer to{" "}
+            <Text
+              component={TextVariants.a}
+              href={about.documentationUrl}
+              target="_blank"
+            >
+              {about.displayName} documentation
+            </Text>
           </Text>
-          .
-        </Text>
-        <Text component={TextVariants.p}>
-          Para mayor información por favor diríjase a{" "}
-          <Text
-            component={TextVariants.a}
-            href={"https://project-openubl.github.io/"}
-            target="_blank"
-          >
-            {brandName} documentación
-          </Text>
-          .
-        </Text>
+        ) : null}
       </TextContent>
       <TextContent className="pf-v5-u-py-xl">
         <TextContent>

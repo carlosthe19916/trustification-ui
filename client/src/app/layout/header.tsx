@@ -31,14 +31,17 @@ import EllipsisVIcon from "@patternfly/react-icons/dist/esm/icons/ellipsis-v-ico
 import HelpIcon from "@patternfly/react-icons/dist/esm/icons/help-icon";
 
 import { useLocalStorage } from "@app/hooks/useStorage";
-import { APP_BRAND, BrandType, isAuthRequired } from "@app/Constants";
+import { isAuthRequired } from "@app/Constants";
 
 import { AboutApp } from "./about";
-import trustificationBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
-import rhtpaBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
 import imgAvatar from "../images/avatar.svg";
+import useBranding from "@app/hooks/useBranding";
 
 export const HeaderApp: React.FC = () => {
+  const {
+    masthead: { leftBrand, leftTitle, rightBrand },
+  } = useBranding();
+
   const auth = (isAuthRequired && useAuth()) || undefined;
 
   const navigate = useNavigate();
@@ -78,19 +81,13 @@ export const HeaderApp: React.FC = () => {
         </MastheadToggle>
         <MastheadMain>
           <MastheadBrand>
-            {APP_BRAND === BrandType.Trustification ? (
+            {leftBrand ? (
               <Brand
-                src={trustificationBrandImage}
-                alt="brand"
-                heights={{ default: "40px" }}
+                src={leftBrand.src}
+                alt={leftBrand.alt}
+                heights={{ default: leftBrand.height }}
               />
-            ) : (
-              <Brand
-                src={rhtpaBrandImage}
-                alt="brand"
-                heights={{ default: "40px" }}
-              />
-            )}
+            ) : null}
           </MastheadBrand>
         </MastheadMain>
         <MastheadContent>
@@ -104,41 +101,7 @@ export const HeaderApp: React.FC = () => {
                 <ToolbarGroup
                   variant="icon-button-group"
                   visibility={{ default: "hidden", lg: "visible" }}
-                >
-                  <ToolbarItem>
-                    <Dropdown
-                      isOpen={isLangDropdownOpen}
-                      onSelect={() =>
-                        setIsLangDropdownOpen(!isLangDropdownOpen)
-                      }
-                      onOpenChange={(isOpen: boolean) =>
-                        setIsLangDropdownOpen(isOpen)
-                      }
-                      popperProps={{ position: "right" }}
-                      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                        <MenuToggle
-                          ref={toggleRef}
-                          onClick={() =>
-                            setIsLangDropdownOpen(!isLangDropdownOpen)
-                          }
-                          isExpanded={isLangDropdownOpen}
-                          variant="plainText"
-                          aria-label="About"
-                        >
-                          {lang}
-                        </MenuToggle>
-                      )}
-                    >
-                      <DropdownList>
-                        <DropdownItem key="es" onClick={() => setLang("es")}>
-                          Español
-                        </DropdownItem>
-                        <DropdownItem key="en" onClick={() => setLang("en")}>
-                          Ingles
-                        </DropdownItem>
-                      </DropdownList>
-                    </Dropdown>
-                  </ToolbarItem>
+                >                  
                   <ToolbarItem>
                     <Button
                       aria-label="About"

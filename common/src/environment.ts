@@ -22,9 +22,6 @@ export type TrustificationEnvType = {
   /** SSO / Oidc client id */
   OIDC_CLIENT_ID: string;
 
-  /** Branding to apply to the UI */
-  PROFILE: "trustification" | "rhtpa";
-
   /** UI upload file size limit in megabytes (MB), suffixed with "m" */
   UI_INGRESS_PROXY_BODY_SIZE: string;
 
@@ -36,16 +33,24 @@ export type TrustificationEnvType = {
 
   /** Target URL for the UI server's `/hub` proxy */
   TRUSTIFICATION_HUB_URL?: string;
+
+  /** Location of branding files (relative paths computed from the project source root) */
+  BRANDING?: string;
 };
 
 /**
- * Keys in `KonveyorEnvType` that are only used on the server and therefore do not
+ * Keys in `TrustificationEnv` that are only used on the server and therefore do not
  * need to be sent to the client.
  */
-export const SERVER_ENV_KEYS = ["PORT", "OIDC_SERVER_URL", "TRUSTIFICATION_HUB_URL"];
+export const SERVER_ENV_KEYS = [
+  "PORT",
+  "OIDC_SERVER_URL",
+  "TRUSTIFICATION_HUB_URL",
+  "BRANDING",
+];
 
 /**
- * Create a `KonveyorEnv` from a partial `KonveyorEnv` with a set of default values.
+ * Create a `TrustificationEnv` from a partial `TrustificationEnv` with a set of default values.
  */
 export const buildTrustificationEnv = ({
   NODE_ENV = "production",
@@ -57,9 +62,9 @@ export const buildTrustificationEnv = ({
   AUTH_REQUIRED = "false",
   OIDC_CLIENT_ID = "frontend",
 
-  PROFILE = "trustification",
   UI_INGRESS_PROXY_BODY_SIZE = "500m",
   TRUSTIFICATION_HUB_URL,
+  BRANDING,
 }: Partial<TrustificationEnvType> = {}): TrustificationEnvType => ({
   NODE_ENV,
   PORT,
@@ -70,9 +75,9 @@ export const buildTrustificationEnv = ({
   AUTH_REQUIRED,
   OIDC_CLIENT_ID,
 
-  PROFILE,
   UI_INGRESS_PROXY_BODY_SIZE,
   TRUSTIFICATION_HUB_URL,
+  BRANDING,
 });
 
 /**

@@ -9,8 +9,8 @@ import {
   TextVariants,
 } from "@patternfly/react-core";
 
-import trustificationBrandImage from "@app/images/Openubl-white-logo.svg";
-import rhtpaBrandImage from "@app/images/Openubl-white-logo.svg";
+import trustificationBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
+import rhtpaBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
 
 import backgroundImage from "@app/images/pfbg-icon.svg";
 

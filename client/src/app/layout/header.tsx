@@ -34,8 +34,8 @@ import { useLocalStorage } from "@app/hooks/useStorage";
 import { APP_BRAND, BrandType, isAuthRequired } from "@app/Constants";
 
 import { AboutApp } from "./about";
-import trustificationBrandImage from "@app/images/Openubl-white-logo.svg";
-import rhtpaBrandImage from "@app/images/Openubl-white-logo.svg";
+import trustificationBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
+import rhtpaBrandImage from "@app/images/trustification_logo_hori_reverse.svg";
 import imgAvatar from "../images/avatar.svg";
 
 export const HeaderApp: React.FC = () => {
@@ -82,13 +82,13 @@ export const HeaderApp: React.FC = () => {
               <Brand
                 src={trustificationBrandImage}
                 alt="brand"
-                heights={{ default: "60px" }}
+                heights={{ default: "40px" }}
               />
             ) : (
               <Brand
                 src={rhtpaBrandImage}
                 alt="brand"
-                heights={{ default: "60px" }}
+                heights={{ default: "40px" }}
               />
             )}
           </MastheadBrand>

@@ -55,7 +55,7 @@ export const buildTrustificationEnv = ({
 
   OIDC_SERVER_URL,
   AUTH_REQUIRED = "false",
-  OIDC_CLIENT_ID: OIDC_CLIENT_ID = "trustification-ui",
+  OIDC_CLIENT_ID = "frontend",
 
   PROFILE = "trustification",
   UI_INGRESS_PROXY_BODY_SIZE = "500m",

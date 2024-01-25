@@ -3,6 +3,7 @@ import { NavLink, useMatch } from "react-router-dom";
 
 import {
   Nav,
+  NavExpandable,
   NavGroup,
   NavItem,
   NavList,
@@ -25,33 +26,18 @@ export const SidebarApp: React.FC = () => {
   const renderPageNav = () => {
     return (
       <Nav id="nav-sidebar" aria-label="Nav" theme={LayoutTheme}>
-        <NavGroup title="General">
+        <NavList>
           <li className="pf-v5-c-nav__item">
             <NavLink
-              to="/"
+              to="/advisories"
               className={({ isActive }) => {
                 return css(LINK_CLASS, isActive ? ACTIVE_LINK_CLASS : "");
               }}
             >
-              Proyectos
+              Advisories
             </NavLink>
           </li>
-        </NavGroup>
-
-        {projectId && (
-          <NavGroup title={project ? `Proyecto: ${project.name}` : "Proyecto"}>
-            <li className="pf-v5-c-nav__item">
-              <NavLink
-                to={`/projects/${projectId}/documents`}
-                className={({ isActive }) => {
-                  return css(LINK_CLASS, isActive ? ACTIVE_LINK_CLASS : "");
-                }}
-              >
-                Comprobantes electrónicos
-              </NavLink>
-            </li>
-          </NavGroup>
-        )}
+        </NavList>
       </Nav>
     );
   };

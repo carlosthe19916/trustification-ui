@@ -4,17 +4,15 @@ import { useRoutes } from "react-router-dom";
 import { Bullseye, Spinner } from "@patternfly/react-core";
 
 const Home = lazy(() => import("./pages/home"));
-const Projects = lazy(() => import("./pages/projects"));
-const Documents = lazy(() => import("./pages/documents"));
+const Advisories = lazy(() => import("./pages/advisories"));
 
 export const ViewRepositoryRouteParam = "repositoryId";
 export const ViewPackageRouteParam = "packageId";
 
 export const AppRoutes = () => {
   const allRoutes = useRoutes([
-    { path: "/", element: <Projects /> },
-    { path: "/home", element: <Home /> },
-    { path: "/projects/:projectId/documents", element: <Documents /> },
+    { path: "/", element: <Home /> },
+    { path: "/advisories", element: <Advisories /> },    
     // { path: "*", element: <Navigate to="/organizations" /> },
   ]);
 

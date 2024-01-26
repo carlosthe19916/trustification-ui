@@ -1,108 +1,154 @@
-import React, { useContext, useState } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
-import { AxiosError } from "axios";
 
 import {
+  ConditionalTableBody,
+  FilterType,
+  useTablePropHelpers,
+  useTableState,
+} from "@mturley-latest/react-table-batteries";
+import {
   Button,
-  ButtonVariant,
-  Modal,
-  ModalVariant,
   PageSection,
   PageSectionVariants,
   Text,
   TextContent,
   ToolbarContent,
-  ToolbarGroup,
-  ToolbarItem,
 } from "@patternfly/react-core";
-import { ActionsColumn, Td as TdAction } from "@patternfly/react-table";
 import {
-  useClientTableBatteries,
-  ConditionalTableBody,
-  FilterType,
-} from "@mturley-latest/react-table-batteries";
+  Tr as PFTr,
+  Td as PFTd,
+  ExpandableRowContent,
+} from "@patternfly/react-table";
+import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
-import {
-  useFetchProjects,
-  useDeleteProjectMutation,
-} from "@app/queries/projects";
+import { saveAs } from "file-saver";
 
-import { Project } from "@app/api/models";
-import { ProjectForm } from "./components/project-form";
-import { ConfirmDialog } from "@app/components/ConfirmDialog";
+import { useFetchAdvisories } from "@app/queries/advisories";
+
 import { NotificationsContext } from "@app/components/NotificationsContext";
-import { getAxiosErrorMessage } from "@app/utils/utils";
+import { getHubRequestParams } from "@app/hooks/table-controls";
+import { formatRustDate, getAxiosErrorMessage } from "@app/utils/utils";
+import { downloadAdvisoryById } from "@app/api/rest";
+
+import { RHSeverityShield } from "./rh-severity";
+import { VulnerabilitiesCount } from "./vulnerabilities";
+import { AdvisoryDetails } from "./advisory-details";
 
 export const Projects: React.FC = () => {
-  const { pushNotification } = useContext(NotificationsContext);
+  const { pushNotification } = React.useContext(NotificationsContext);
 
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] =
-    useState<boolean>(false);
-  const [projectToDelete, setProjectToDelete] = React.useState<Project>();
-
-  const [createUpdateModalState, setCreateUpdateModalState] = useState<
-    "create" | Project | null
-  >(null);
-  const isCreateUpdateModalOpen = createUpdateModalState !== null;
-  const projectToUpdate =
-    createUpdateModalState !== "create" ? createUpdateModalState : null;
-
-  const onDeleteOrgSuccess = () => {
-    pushNotification({
-      title: "Project deleted",
-      variant: "success",
-    });
-  };
-
-  const onDeleteOrgError = (error: AxiosError) => {
-    pushNotification({
-      title: getAxiosErrorMessage(error),
-      variant: "danger",
-    });
-  };
-
-  const { projects, isFetching, fetchError, refetch } = useFetchProjects();
-
-  const { mutate: deleteproject } = useDeleteProjectMutation(
-    onDeleteOrgSuccess,
-    onDeleteOrgError
-  );
-
-  const tableControls = useClientTableBatteries({
+  const tableState = useTableState({
     persistTo: "urlParams",
-    idProperty: "id",
-    items: projects,
-    isLoading: isFetching,
+    persistenceKeyPrefix: "a",
     columnNames: {
-      name: "Name",
-      description: "Description",
+      id: "ID",
+      title: "Title",
+      severity: "Aggregated severity",
+      revision: "Revision",
+      vulnerabilities: "Vulnerabilities",
+      download: "Download",
     },
-    hasActionsColumn: true,
     filter: {
       isEnabled: true,
       filterCategories: [
         {
-          key: "q",
-          title: "Name",
+          key: "filterText",
+          title: "Filter text",
+          placeholderText: "Search",
           type: FilterType.search,
-          placeholderText: "Filter by Name...",
-          getItemValue: (item) => item.name || "",
+        },
+        {
+          key: "severity",
+          title: "Severity",
+          placeholderText: "Severity",
+          type: FilterType.multiselect,
+          selectOptions: [
+            { key: "low", value: "Low" },
+            { key: "moderate", value: "Moderate" },
+            { key: "important", value: "Important" },
+            { key: "critical", value: "Critical" },
+          ],
+        },
+        {
+          key: "product",
+          title: "Product",
+          placeholderText: "Product",
+          type: FilterType.multiselect,
+          selectOptions: [
+            {
+              key: "cpe:/o:redhat:rhel_eus:7",
+              value: "Red Hat Enterprise Linux 7",
+            },
+            {
+              key: "cpe:/o:redhat:rhel_eus:8",
+              value: "Red Hat Enterprise Linux 8",
+            },
+            {
+              key: "cpe:/a:redhat:enterprise_linux:9",
+              value: "Red Hat Enterprise Linux 9",
+            },
+            {
+              key: "cpe:/a:redhat:openshift:3",
+              value: "Openshift Container Platform 3",
+            },
+            {
+              key: "cpe:/a:redhat:openshift:4",
+              value: "Openshift Container Platform 4",
+            },
+          ],
+        },
+        {
+          key: "revision",
+          title: "Revision",
+          placeholderText: "Revision",
+          type: FilterType.select,
+          selectOptions: [
+            { key: "cpe:/o:redhat:rhel_eus:7", value: "Last 7 days" },
+            { key: "cpe:/o:redhat:rhel_eus:8", value: "Last 30 days" },
+            { key: "cpe:/a:redhat:enterprise_linux:9", value: "This year" },
+            { key: "cpe:/a:redhat:openshift:3", value: "2023" },
+            { key: "cpe:/a:redhat:openshift:3", value: "2022" },
+            { key: "cpe:/a:redhat:openshift:4", value: "2021" },
+          ],
         },
       ],
     },
     sort: {
       isEnabled: true,
-      sortableColumns: ["name"],
-      getSortValues: (project) => ({
-        name: project?.name || "",
-      }),
+      sortableColumns: ["severity"],
     },
     pagination: { isEnabled: true },
+    expansion: {
+      isEnabled: true,
+      variant: "single",
+      persistTo: "localStorage",
+    },
+  });
+
+  const { filter, cacheKey } = tableState;
+  const hubRequestParams = React.useMemo(() => {
+    return getHubRequestParams({
+      ...tableState,
+      filterCategories: filter.filterCategories,
+    });
+  }, [cacheKey]);
+
+  const { isFetching, result, fetchError } =
+    useFetchAdvisories(hubRequestParams);
+
+  const tableProps = useTablePropHelpers({
+    ...tableState,
+    idProperty: "id",
+    isLoading: isFetching,
+    currentPageItems: result.data,
+    totalItemCount: result.total,
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
+    expansion: { isCellExpanded },
     components: {
       Table,
       Thead,
@@ -115,23 +161,27 @@ export const Projects: React.FC = () => {
       PaginationToolbarItem,
       Pagination,
     },
-  } = tableControls;
+  } = tableProps;
 
-  const closeCreateUpdateModal = () => {
-    setCreateUpdateModalState(null);
-    refetch;
-  };
-
-  const deleteRow = (row: Project) => {
-    setProjectToDelete(row);
-    setIsConfirmDialogOpen(true);
+  const downloadAdvisory = (id: string, filename: string) => {
+    downloadAdvisoryById(id)
+      .then((response) => {
+        saveAs(new Blob([response.data]), filename);
+      })
+      .catch((error) => {
+        pushNotification({
+          title: getAxiosErrorMessage(error),
+          variant: "danger",
+        });
+      });
   };
 
   return (
     <>
       <PageSection variant={PageSectionVariants.light}>
         <TextContent>
-          <Text component="h1">Projects</Text>
+          <Text component="h1">Advisories</Text>
+          {/* <Text component="p">Search security advisories</Text> */}
         </TextContent>
       </PageSection>
       <PageSection>
@@ -142,25 +192,15 @@ export const Projects: React.FC = () => {
         >
           <Toolbar>
             <ToolbarContent>
-              <FilterToolbar id="project-toolbar" />
-              <ToolbarGroup variant="button-group">
-                <ToolbarItem>
-                  <Button
-                    type="button"
-                    id="create-project"
-                    aria-label="Create new project"
-                    variant={ButtonVariant.primary}
-                    onClick={() => setCreateUpdateModalState("create")}
-                  >
-                    Create new
-                  </Button>
-                </ToolbarItem>
-              </ToolbarGroup>
+              <FilterToolbar
+                id="advisory-toolbar"
+                {...{ showFiltersSideBySide: true }}
+              />
               <PaginationToolbarItem>
                 <Pagination
                   variant="top"
                   isCompact
-                  widgetId="projects-pagination-top"
+                  widgetId="advisories-pagination-top"
                 />
               </PaginationToolbarItem>
             </ToolbarContent>
@@ -169,47 +209,70 @@ export const Projects: React.FC = () => {
           <Table aria-label="Projects table">
             <Thead>
               <Tr isHeaderRow>
-                <Th columnKey="name" />
-                <Th columnKey="description" />
+                <Th columnKey="id" />
+                <Th columnKey="title" />
+                <Th columnKey="severity" />
+                <Th columnKey="revision" />
+                <Th columnKey="vulnerabilities" />
+                <Th columnKey="download" />
               </Tr>
             </Thead>
             <ConditionalTableBody
               isLoading={isFetching}
               isError={!!fetchError}
-              isNoData={projects.length === 0}
+              isNoData={result.total === 0}
               numRenderedColumns={numRenderedColumns}
             >
               <Tbody>
                 {currentPageItems?.map((item, rowIndex) => {
                   return (
-                    <Tr key={item.name} item={item} rowIndex={rowIndex}>
-                      <Td width={15} columnKey="name">
-                        <NavLink to={`/projects/${item.id}/documents`}>
-                          {item.name}
-                        </NavLink>
-                      </Td>
-                      <Td
-                        width={20}
-                        modifier="truncate"
-                        columnKey="description"
-                      >
-                        {item.description}
-                      </Td>
-                      <TdAction isActionCell>
-                        <ActionsColumn
-                          items={[
-                            {
-                              title: "Edit",
-                              onClick: () => setCreateUpdateModalState(item),
-                            },
-                            {
-                              title: "Delete",
-                              onClick: () => deleteRow(item),
-                            },
-                          ]}
-                        />
-                      </TdAction>
-                    </Tr>
+                    <>
+                      <Tr key={item.id} item={item} rowIndex={rowIndex}>
+                        <Td width={15} columnKey="id">
+                          <NavLink to={`/advisories/${item.id}`}>
+                            {item.id}
+                          </NavLink>
+                        </Td>
+                        <Td width={45} modifier="truncate" columnKey="title">
+                          {item.title}
+                        </Td>
+                        <Td width={10} columnKey="severity">
+                          <RHSeverityShield value={item.severity} />
+                        </Td>
+                        <Td width={10} modifier="truncate" columnKey="revision">
+                          {formatRustDate(item.date)}
+                        </Td>
+                        <Td width={10} columnKey="vulnerabilities">
+                          {item.cves.length === 0 ? (
+                            "N/A"
+                          ) : (
+                            <VulnerabilitiesCount
+                              severities={item.cve_severity_count}
+                            />
+                          )}
+                        </Td>
+                        <Td width={10} columnKey="download">
+                          <Button
+                            variant="plain"
+                            aria-label="Download"
+                            onClick={() => {
+                              downloadAdvisory(item.id, `${item.id}.json`);
+                            }}
+                          >
+                            <DownloadIcon />
+                          </Button>
+                        </Td>
+                      </Tr>
+                      {isCellExpanded(item) ? (
+                        <PFTr isExpanded>
+                          <PFTd colSpan={7}>
+                            <ExpandableRowContent>
+                              <AdvisoryDetails id={item.id} />
+                            </ExpandableRowContent>
+                          </PFTd>
+                        </PFTr>
+                      ) : null}
+                    </>
                   );
                 })}
               </Tbody>
@@ -218,44 +281,10 @@ export const Projects: React.FC = () => {
           <Pagination
             variant="bottom"
             isCompact
-            widgetId="projects-pagination-bottom"
+            widgetId="advisories-pagination-bottom"
           />
         </div>
       </PageSection>
-
-      <Modal
-        id="create-edit-project-modal"
-        title={projectToUpdate ? "Update" : "Create new"}
-        variant={ModalVariant.medium}
-        isOpen={isCreateUpdateModalOpen}
-        onClose={closeCreateUpdateModal}
-      >
-        <ProjectForm
-          project={projectToUpdate ? projectToUpdate : undefined}
-          onClose={closeCreateUpdateModal}
-        />
-      </Modal>
-
-      {isConfirmDialogOpen && (
-        <ConfirmDialog
-          title="Delete"
-          isOpen={true}
-          titleIconVariant={"warning"}
-          message="Are you sure you want to delete"
-          confirmBtnVariant={ButtonVariant.danger}
-          confirmBtnLabel="Delete"
-          cancelBtnLabel="Cancel"
-          onCancel={() => setIsConfirmDialogOpen(false)}
-          onClose={() => setIsConfirmDialogOpen(false)}
-          onConfirm={() => {
-            if (projectToDelete) {
-              deleteproject(projectToDelete.id);
-              setProjectToDelete(undefined);
-            }
-            setIsConfirmDialogOpen(false);
-          }}
-        />
-      )}
     </>
   );
 };

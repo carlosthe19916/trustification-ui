@@ -44,7 +44,6 @@ export type TrustificationEnvType = {
  */
 export const SERVER_ENV_KEYS = [
   "PORT",
-  "OIDC_SERVER_URL",
   "TRUSTIFICATION_HUB_URL",
   "BRANDING",
 ];

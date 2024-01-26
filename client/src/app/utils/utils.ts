@@ -1,5 +1,7 @@
 import { ToolbarChip } from "@patternfly/react-core";
+import { dataTagSymbol } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import dayjs from "dayjs";
 
 // Axios error
 
@@ -27,6 +29,10 @@ export const getToolbarChipKey = (value: string | ToolbarChip) => {
 };
 
 // Dates
+
+export const formatRustDate = (date: number[]) => {
+  return dayjs(date as any).format("MMM DD, YYYY");
+};
 
 export const formatDate = (value: Date, includeTime = true) => {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

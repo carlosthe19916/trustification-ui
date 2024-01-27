@@ -160,15 +160,61 @@ export const wrapInQuotesAndEscape = (value: string | number): string =>
  */
 export const serializeFilterForHub = (filter: HubFilter): string => {
   const { field, operator, value } = filter;
-  const joinedValue =
-    typeof value === "string"
-      ? wrapInQuotesAndEscape(value)
-      : typeof value === "number"
-        ? `"${value}"`
-        : `(${value.list
-            .map(wrapInQuotesAndEscape)
-            .join(value.operator === "OR" ? "|" : ",")})`;
-  return `${field}${operator}${joinedValue}`;
+
+  let sikula: (fieldName: string, fieldValue: string) => string = () => "";
+  switch (operator) {
+    case "=":
+      sikula = (fieldName, fieldValue) => {
+        let f = fieldName.split(":");
+        if (f.length > 1) {
+          return `(${fieldValue} in:${f[0]})`;
+        } else {
+          return `${fieldName}:${fieldValue}`;
+        }
+      };
+      break;
+    case "!=":
+      sikula = (fieldName, fieldValue) => {
+        return `-${fieldName}:${fieldValue}`;
+      };
+      break;
+    case "~":
+      sikula = (_, fieldValue) => {
+        return fieldValue;
+      };
+      break;
+    case ">":
+      sikula = (fieldName, fieldValue) => {
+        return `-${fieldName}:>${fieldValue}`;
+      };
+      break;
+    case "<":
+      sikula = (fieldName, fieldValue) => {
+        return `-${fieldName}:<${fieldValue}`;
+      };
+      break;
+    case "<=":
+      sikula = (fieldName, fieldValue) => {
+        return `-${fieldName}:<=${fieldValue}`;
+      };
+      break;
+    case ">=":
+      sikula = (fieldName, fieldValue) => {
+        return `-${fieldName}:>=${fieldValue}`;
+      };
+      break;
+  }
+
+  if (typeof value === "string") {
+    return sikula(field, wrapInQuotesAndEscape(value));
+  } else if (typeof value === "number") {
+    return sikula(field, `"${value}"`);
+  } else {
+    return value.list
+      .map(wrapInQuotesAndEscape)
+      .map((val) => sikula(field, val))
+      .join(` ${value.operator || "AND"} `);
+  }
 };
 
 /**
@@ -184,8 +230,8 @@ export const serializeFilterRequestParamsForHub = (
   const { filters } = deserializedParams;
   if (filters) {
     serializedParams.append(
-      "filter",
-      filters.map(serializeFilterForHub).join(",")
+      "q",
+      `(${filters.map(serializeFilterForHub).join(")(")})`
     );
   }
 };

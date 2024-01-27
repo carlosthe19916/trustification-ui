@@ -22,6 +22,7 @@ import {
 } from "@patternfly/react-table";
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
+import dayjs from "dayjs";
 import { saveAs } from "file-saver";
 
 import { useFetchAdvisories } from "@app/queries/advisories";
@@ -34,6 +35,8 @@ import { downloadAdvisoryById } from "@app/api/rest";
 import { RHSeverityShield } from "./rh-severity";
 import { VulnerabilitiesCount } from "./vulnerabilities";
 import { AdvisoryDetails } from "./advisory-details";
+
+const DATE_FORMAT = "YYYY-MM-DD";
 
 export const Advisories: React.FC = () => {
   const { pushNotification } = React.useContext(NotificationsContext);
@@ -71,7 +74,7 @@ export const Advisories: React.FC = () => {
           ],
         },
         {
-          key: "product",
+          key: "package:in",
           title: "Product",
           placeholderText: "Product",
           type: FilterType.multiselect,
@@ -99,17 +102,32 @@ export const Advisories: React.FC = () => {
           ],
         },
         {
-          key: "revision",
+          key: "release",
           title: "Revision",
           placeholderText: "Revision",
           type: FilterType.select,
           selectOptions: [
-            { key: "cpe:/o:redhat:rhel_eus:7", value: "Last 7 days" },
-            { key: "cpe:/o:redhat:rhel_eus:8", value: "Last 30 days" },
-            { key: "cpe:/a:redhat:enterprise_linux:9", value: "This year" },
-            { key: "cpe:/a:redhat:openshift:3", value: "2023" },
-            { key: "cpe:/a:redhat:openshift:3", value: "2022" },
-            { key: "cpe:/a:redhat:openshift:4", value: "2021" },
+            {
+              key: `${dayjs().subtract(7, "day").format(DATE_FORMAT)}..${dayjs().format(DATE_FORMAT)}`,
+              value: "Last 7 days",
+            },
+            {
+              key: `${dayjs().subtract(30, "day").format(DATE_FORMAT)}..${dayjs().format(DATE_FORMAT)}`,
+              value: "Last 30 days",
+            },
+            {
+              key: `${dayjs().startOf("year").format(DATE_FORMAT)}..${dayjs().format(DATE_FORMAT)}`,
+              value: "This year",
+            },
+            ...[...Array(3)].map((_, index) => {
+              let date = dayjs()
+                .startOf("year")
+                .subtract(index + 1, "year");
+              return {
+                key: `${date.format(DATE_FORMAT)}..${date.endOf("year").format(DATE_FORMAT)}`,
+                value: date.year(),
+              };
+            }),
           ],
         },
       ],

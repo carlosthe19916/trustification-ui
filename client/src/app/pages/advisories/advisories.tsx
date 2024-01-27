@@ -35,7 +35,7 @@ import { RHSeverityShield } from "./rh-severity";
 import { VulnerabilitiesCount } from "./vulnerabilities";
 import { AdvisoryDetails } from "./advisory-details";
 
-export const Projects: React.FC = () => {
+export const Advisories: React.FC = () => {
   const { pushNotification } = React.useContext(NotificationsContext);
 
   const tableState = useTableState({
@@ -206,7 +206,7 @@ export const Projects: React.FC = () => {
             </ToolbarContent>
           </Toolbar>
 
-          <Table aria-label="Projects table">
+          <Table aria-label="Advisory details table">
             <Thead>
               <Tr isHeaderRow>
                 <Th columnKey="id" />
@@ -223,59 +223,57 @@ export const Projects: React.FC = () => {
               isNoData={result.total === 0}
               numRenderedColumns={numRenderedColumns}
             >
-              <Tbody>
-                {currentPageItems?.map((item, rowIndex) => {
-                  return (
-                    <>
-                      <Tr key={item.id} item={item} rowIndex={rowIndex}>
-                        <Td width={15} columnKey="id">
-                          <NavLink to={`/advisories/${item.id}`}>
-                            {item.id}
-                          </NavLink>
-                        </Td>
-                        <Td width={45} modifier="truncate" columnKey="title">
-                          {item.title}
-                        </Td>
-                        <Td width={10} columnKey="severity">
-                          <RHSeverityShield value={item.severity} />
-                        </Td>
-                        <Td width={10} modifier="truncate" columnKey="revision">
-                          {formatRustDate(item.date)}
-                        </Td>
-                        <Td width={10} columnKey="vulnerabilities">
-                          {item.cves.length === 0 ? (
-                            "N/A"
-                          ) : (
-                            <VulnerabilitiesCount
-                              severities={item.cve_severity_count}
-                            />
-                          )}
-                        </Td>
-                        <Td width={10} columnKey="download">
-                          <Button
-                            variant="plain"
-                            aria-label="Download"
-                            onClick={() => {
-                              downloadAdvisory(item.id, `${item.id}.json`);
-                            }}
-                          >
-                            <DownloadIcon />
-                          </Button>
-                        </Td>
-                      </Tr>
-                      {isCellExpanded(item) ? (
-                        <PFTr isExpanded>
-                          <PFTd colSpan={7}>
-                            <ExpandableRowContent>
-                              <AdvisoryDetails id={item.id} />
-                            </ExpandableRowContent>
-                          </PFTd>
-                        </PFTr>
-                      ) : null}
-                    </>
-                  );
-                })}
-              </Tbody>
+              {currentPageItems?.map((item, rowIndex) => {
+                return (
+                  <Tbody key={item.id}>
+                    <Tr item={item} rowIndex={rowIndex}>
+                      <Td width={15} columnKey="id">
+                        <NavLink to={`/advisories/${item.id}`}>
+                          {item.id}
+                        </NavLink>
+                      </Td>
+                      <Td width={45} modifier="truncate" columnKey="title">
+                        {item.title}
+                      </Td>
+                      <Td width={10} columnKey="severity">
+                        <RHSeverityShield value={item.severity} />
+                      </Td>
+                      <Td width={10} modifier="truncate" columnKey="revision">
+                        {formatRustDate(item.date)}
+                      </Td>
+                      <Td width={10} columnKey="vulnerabilities">
+                        {item.cves.length === 0 ? (
+                          "N/A"
+                        ) : (
+                          <VulnerabilitiesCount
+                            severities={item.cve_severity_count}
+                          />
+                        )}
+                      </Td>
+                      <Td width={10} columnKey="download">
+                        <Button
+                          variant="plain"
+                          aria-label="Download"
+                          onClick={() => {
+                            downloadAdvisory(item.id, `${item.id}.json`);
+                          }}
+                        >
+                          <DownloadIcon />
+                        </Button>
+                      </Td>
+                    </Tr>
+                    {isCellExpanded(item) ? (
+                      <PFTr isExpanded>
+                        <PFTd colSpan={7}>
+                          <ExpandableRowContent>
+                            <AdvisoryDetails id={item.id} />
+                          </ExpandableRowContent>
+                        </PFTd>
+                      </PFTr>
+                    ) : null}
+                  </Tbody>
+                );
+              })}
             </ConditionalTableBody>
           </Table>
           <Pagination

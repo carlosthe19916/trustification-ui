@@ -59,6 +59,7 @@ export interface AdvisoryIndexed {
 export interface Advisory {
   product_tree: ProductTree;
   vulnerabilities: Vulnerability[];
+  document: AdvisoryDocument;
 }
 
 export interface ProductTree {
@@ -115,4 +116,37 @@ export interface CVSS_v3 {
   vectorString: string;
   version: string;
   products: string[];
+}
+
+export type CSAF_Category = "csaf_base" | "csaf_security_advisory" | "csaf_vex";
+
+export interface AdvisoryDocument {
+  category: CSAF_Category | string;
+  aggregate_severity: {
+    namespace?: string;
+    text: RHSeverity;
+  };
+  publisher: {
+    name: string;
+    category: string;
+    namespace: string;
+    contact_details?: string;
+    issuing_authority?: string;
+  };
+  tracking: {
+    id: string;
+    status: string;
+    initial_release_date: string;
+    current_release_date: string;
+  };
+  references: {
+    category: string;
+    summary: string;
+    url: string;
+  }[];
+  notes: {
+    category: string;
+    text: string;
+    title: string;
+  }[];
 }

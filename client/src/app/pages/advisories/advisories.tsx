@@ -32,7 +32,8 @@ import { getHubRequestParams } from "@app/hooks/table-controls";
 import { formatRustDate, getAxiosErrorMessage } from "@app/utils/utils";
 import { downloadAdvisoryById } from "@app/api/rest";
 
-import { RHSeverityShield } from "./rh-severity";
+import { RHSeverityShield } from "@app/components/csaf/rh-severity";
+
 import { VulnerabilitiesCount } from "./vulnerabilities";
 import { AdvisoryDetails } from "./advisory-details";
 
@@ -196,7 +197,7 @@ export const Advisories: React.FC = () => {
 
   return (
     <>
-      <PageSection variant={PageSectionVariants.light}>
+      <PageSection variant={PageSectionVariants.default}>
         <TextContent>
           <Text component="h1">Advisories</Text>
           {/* <Text component="p">Search security advisories</Text> */}

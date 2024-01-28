@@ -43,7 +43,7 @@ export const RHSeverityShield: React.FC<RHSeverityShieldProps> = ({
 
   return (
     <Flex
-      spaceItems={{ default: "spaceItemsSm" }}
+      spaceItems={{ default: "spaceItemsXs" }}
       alignItems={{ default: "alignItemsCenter" }}
       flexWrap={{ default: "nowrap" }}
       style={{ whiteSpace: "nowrap" }}

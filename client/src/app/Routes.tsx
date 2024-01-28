@@ -1,18 +1,17 @@
 import React, { Suspense, lazy } from "react";
-import { useRoutes } from "react-router-dom";
+import { useParams, useRoutes } from "react-router-dom";
 
 import { Bullseye, Spinner } from "@patternfly/react-core";
 
 const Home = lazy(() => import("./pages/home"));
 const Advisories = lazy(() => import("./pages/advisories"));
-
-export const ViewRepositoryRouteParam = "repositoryId";
-export const ViewPackageRouteParam = "packageId";
+const Advisory = lazy(() => import("./pages/advisory"));
 
 export const AppRoutes = () => {
   const allRoutes = useRoutes([
     { path: "/", element: <Home /> },
-    { path: "/advisories", element: <Advisories /> },    
+    { path: "/advisories", element: <Advisories /> },
+    { path: `/advisories/:${PathParam.ADVISORY_ID}`, element: <Advisory /> },
     // { path: "*", element: <Navigate to="/organizations" /> },
   ]);
 
@@ -27,4 +26,13 @@ export const AppRoutes = () => {
       {allRoutes}
     </Suspense>
   );
+};
+
+export enum PathParam {
+  ADVISORY_ID = "advisoryId",
+}
+
+export const useRouteParams = (pathParam: PathParam) => {
+  let params = useParams();
+  return params[pathParam];
 };

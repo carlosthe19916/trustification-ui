@@ -15,27 +15,27 @@ import {
   TextContent,
   ToolbarContent,
 } from "@patternfly/react-core";
-import {
-  Tr as PFTr,
-  Td as PFTd,
-  ExpandableRowContent,
-} from "@patternfly/react-table";
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
+import {
+  ExpandableRowContent,
+  Td as PFTd,
+  Tr as PFTr,
+} from "@patternfly/react-table";
 
 import dayjs from "dayjs";
-import { saveAs } from "file-saver";
 
 import { useFetchAdvisories } from "@app/queries/advisories";
 
 import { NotificationsContext } from "@app/components/NotificationsContext";
 import { getHubRequestParams } from "@app/hooks/table-controls";
-import { formatRustDate, getAxiosErrorMessage } from "@app/utils/utils";
-import { downloadAdvisoryById } from "@app/api/rest";
+import { formatRustDate } from "@app/utils/utils";
 
 import { RHSeverityShield } from "@app/components/csaf/rh-severity";
 
-import { VulnerabilitiesCount } from "./vulnerabilities";
+import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
 import { AdvisoryDetails } from "./advisory-details";
+import { VulnerabilitiesCount } from "./vulnerabilities";
+import { TablePersistenceKeyPrefixes } from "@app/Constants";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
@@ -43,8 +43,8 @@ export const Advisories: React.FC = () => {
   const { pushNotification } = React.useContext(NotificationsContext);
 
   const tableState = useTableState({
-    persistTo: "urlParams",
-    persistenceKeyPrefix: "a",
+    persistTo: "sessionStorage",
+    persistenceKeyPrefix: TablePersistenceKeyPrefixes.advisories,
     columnNames: {
       id: "ID",
       title: "Title",
@@ -141,7 +141,7 @@ export const Advisories: React.FC = () => {
     expansion: {
       isEnabled: true,
       variant: "single",
-      persistTo: "localStorage",
+      persistTo: "sessionStorage",
     },
   });
 
@@ -167,7 +167,6 @@ export const Advisories: React.FC = () => {
   const {
     currentPageItems,
     numRenderedColumns,
-    expansion: { isCellExpanded },
     components: {
       Table,
       Thead,
@@ -180,24 +179,14 @@ export const Advisories: React.FC = () => {
       PaginationToolbarItem,
       Pagination,
     },
+    expansion: { isCellExpanded },
   } = tableProps;
 
-  const downloadAdvisory = (id: string, filename: string) => {
-    downloadAdvisoryById(id)
-      .then((response) => {
-        saveAs(new Blob([response.data]), filename);
-      })
-      .catch((error) => {
-        pushNotification({
-          title: getAxiosErrorMessage(error),
-          variant: "danger",
-        });
-      });
-  };
+  const downloadAdvisory = useDownloadAdvisory();
 
   return (
     <>
-      <PageSection variant={PageSectionVariants.default}>
+      <PageSection variant={PageSectionVariants.light}>
         <TextContent>
           <Text component="h1">Advisories</Text>
           {/* <Text component="p">Search security advisories</Text> */}
@@ -274,7 +263,7 @@ export const Advisories: React.FC = () => {
                           variant="plain"
                           aria-label="Download"
                           onClick={() => {
-                            downloadAdvisory(item.id, `${item.id}.json`);
+                            downloadAdvisory(item.id);
                           }}
                         >
                           <DownloadIcon />

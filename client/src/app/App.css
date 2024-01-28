@@ -8,3 +8,11 @@
   border-left: var(--pf-c-select__toggle--before--BorderLeftWidth) solid
     var(--pf-c-select__toggle--before--BorderLeftColor) !important;
 }
+
+/* table.vertical-aligned-table > tbody > tr > td {
+  vertical-align: middle;
+}
+
+table.vertical-aligned-table > tbody > tr > td.pf-v5-c-table__toggle > button {
+  vertical-align: middle;
+} */

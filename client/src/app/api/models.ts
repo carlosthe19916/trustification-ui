@@ -94,6 +94,27 @@ export interface Vulnerability {
     name: string;
   };
   product_status: { [k: string]: string[] };
+  remediations: {
+    category: string;
+    details: string;
+    date?: string;
+    url?: string;
+    product_ids: string[];
+  }[];
+  notes: {
+    category: string;
+    text: string;
+    title: string;
+  }[];
+  ids: {
+    system_name: string;
+    text: string;
+  }[];
+  references: {
+    category: string;
+    summary: string;
+    url: string;
+  }[];
 }
 
 export interface Score {

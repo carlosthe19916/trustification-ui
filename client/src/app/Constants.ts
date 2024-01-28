@@ -2,6 +2,10 @@ import ENV from "./env";
 
 export const RENDER_DATE_FORMAT = "MMM DD, YYYY";
 
+export const TablePersistenceKeyPrefixes = {
+  advisories: "ad"
+};
+
 // URL param prefixes: should be short, must be unique for each table that uses one
 export enum TableURLParamKeyPrefix {
   repositories = "r",

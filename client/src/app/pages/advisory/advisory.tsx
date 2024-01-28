@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import {
   Breadcrumb,
   BreadcrumbItem,
+  Bullseye,
   PageSection,
+  Spinner,
   Text,
   TextContent,
 } from "@patternfly/react-core";
+import { CodeEditor, Language } from "@patternfly/react-code-editor";
+import ErrorState from "@patternfly/react-component-groups/dist/dynamic/ErrorState";
+
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 import spacing from "@patternfly/react-styles/css/utilities/Spacing/spacing";
 import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
@@ -19,10 +24,37 @@ import { PathParam, useRouteParams } from "@app/Routes";
 import { useFetchAdvisoryById } from "@app/queries/advisories";
 import { Overview } from "./overview";
 import { RHSeverityShield } from "@app/components/csaf/rh-severity";
+import { Vulnerabilities } from "./vulnerabilities";
+import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
+import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
+
+export const LoadingWrapper = (props: {
+  isFetching: boolean;
+  fetchError?: Error;
+  children: React.ReactNode;
+}) => {
+  if (props.isFetching) {
+    return (
+      <Bullseye>
+        <Spinner />
+      </Bullseye>
+    );
+  } else if (props.fetchError) {
+    return <ErrorState errorTitle="Error" />;
+  } else {
+    return props.children;
+  }
+};
 
 export const Advisory: React.FC = () => {
   const advisoryId = useRouteParams(PathParam.ADVISORY_ID);
-  const { advisory } = useFetchAdvisoryById(advisoryId);
+  const { advisory, isFetching, fetchError } = useFetchAdvisoryById(advisoryId);
+
+  const advisoryString = useMemo(() => {
+    return JSON.stringify(advisory, null, 2);
+  }, [advisory]);
+
+  const downloadAdvisory = useDownloadAdvisory();
 
   return (
     <>
@@ -56,7 +88,11 @@ export const Advisory: React.FC = () => {
                   <DownloadIcon /> Download
                 </>
               ),
-              onClick: () => console.log("Primary action clicked"),
+              onClick: () => {
+                if (advisoryId) {
+                  downloadAdvisory(advisoryId);
+                }
+              },
               variant: "secondary",
             },
           ]}
@@ -66,7 +102,12 @@ export const Advisory: React.FC = () => {
               title: "Overview",
               children: (
                 <div className="pf-v5-u-m-md">
-                  {advisory && <Overview advisory={advisory} />}
+                  <LoadingWrapper
+                    isFetching={isFetching}
+                    fetchError={fetchError}
+                  >
+                    {advisory && <Overview advisory={advisory} />}
+                  </LoadingWrapper>
                 </div>
               ),
             },
@@ -75,28 +116,50 @@ export const Advisory: React.FC = () => {
               title: "Notes",
               children: (
                 <div className="pf-v5-u-m-md">
-                  {advisory?.document.notes.map((e) => (
-                    <TextContent className={spacing.mbMd}>
-                      <Text component="h1">
-                        {e.title} ({e.category.replace("_", " ")})
-                      </Text>
-                      <ReactMarkdown components={markdownPFComponents}>
-                        {e.text}
-                      </ReactMarkdown>
-                    </TextContent>
-                  ))}
+                  <LoadingWrapper
+                    isFetching={isFetching}
+                    fetchError={fetchError}
+                  >
+                    <NotesMarkdown notes={advisory?.document.notes || []} />
+                  </LoadingWrapper>
                 </div>
               ),
             },
             {
               eventKey: "vulnerabilities",
               title: "Vulnerabilities",
-              children: <div className="pf-v5-u-m-md">Other content</div>,
+              children: (
+                <div className="pf-v5-u-m-md">
+                  <LoadingWrapper
+                    isFetching={isFetching}
+                    fetchError={fetchError}
+                  >
+                    <Vulnerabilities
+                      isFetching={isFetching}
+                      fetchError={fetchError}
+                      vulnerabilities={advisory?.vulnerabilities || []}
+                    />
+                  </LoadingWrapper>
+                </div>
+              ),
             },
             {
               eventKey: "source",
               title: "Source",
-              children: <div className="pf-v5-u-m-md">Other content</div>,
+              children: (
+                <div className="pf-v5-u-m-md">
+                  <CodeEditor
+                    isDarkTheme
+                    isLineNumbersVisible
+                    isReadOnly
+                    isMinimapVisible
+                    // isLanguageLabelVisible
+                    code={advisoryString}
+                    language={Language.json}
+                    height="685px"
+                  />
+                </div>
+              ),
             },
           ]}
         />

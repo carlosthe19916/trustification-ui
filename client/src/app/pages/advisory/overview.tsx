@@ -196,13 +196,13 @@ export const Overview: React.FC<OverviewProps> = ({ advisory }) => {
         </StackItem>
         <StackItem>
           <Grid hasGutter>
-            <GridItem md={6}>
+            <GridItem md={4}>
               <Card isFullHeight>
                 <CardTitle>References</CardTitle>
                 <CardBody>
                   <List>
-                    {advisory.document.references.map((e) => (
-                      <ListItem>
+                    {advisory.document.references.map((e, index) => (
+                      <ListItem key={index}>
                         <a href={e.url} target="_blank">
                           {e.summary} <ExternalLinkAltIcon />
                         </a>{" "}
@@ -215,7 +215,7 @@ export const Overview: React.FC<OverviewProps> = ({ advisory }) => {
                 </CardBody>
               </Card>
             </GridItem>
-            <GridItem md={6}>
+            <GridItem md={8}>
               <Card isFullHeight>
                 <CardTitle>Product info</CardTitle>
                 <CardBody>

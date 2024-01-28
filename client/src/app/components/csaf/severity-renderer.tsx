@@ -44,10 +44,24 @@ const baseSeverityList: BaseSeverityListType = {
   },
 };
 
+const severityFromScore = (score: number): BaseSeverity => {
+  if (score >= 9.0) {
+    return "CRITICAL";
+  } else if (score >= 7.0) {
+    return "HIGH";
+  } else if (score >= 4.0) {
+    return "MEDIUM";
+  } else if (score >= 0.1) {
+    return "LOW";
+  } else {
+    return "NONE";
+  }
+};
+
 interface SeverityRendererProps {
   variant: "label" | "progress";
   score: number;
-  severity: BaseSeverity;
+  severity?: BaseSeverity;
 }
 
 export const SeverityRenderer: React.FC<SeverityRendererProps> = ({
@@ -55,8 +69,12 @@ export const SeverityRenderer: React.FC<SeverityRendererProps> = ({
   score,
   severity,
 }) => {
+  let severityType = severity || severityFromScore(score);
+
   if (variant == "label") {
-    return <Label {...baseSeverityList[severity].labelProps}>{score}</Label>;
+    return (
+      <Label {...baseSeverityList[severityType].labelProps}>{score}</Label>
+    );
   } else {
     return (
       <Progress
@@ -65,7 +83,7 @@ export const SeverityRenderer: React.FC<SeverityRendererProps> = ({
         max={10}
         value={score}
         label={`${score}/10`}
-        {...baseSeverityList[severity].progressProps}
+        {...baseSeverityList[severityType].progressProps}
       />
     );
   }

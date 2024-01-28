@@ -5,12 +5,15 @@ import {
   New,
   AdvisoryIndexed,
   Advisory,
+  CveIndexed,
+  Cve,
 } from "./models";
 import { serializeRequestParamsForHub } from "@app/hooks/table-controls";
 
 const HUB = "/hub";
 
 export const ADVISORIES = HUB + "/api/v1/advisory";
+export const CVEs = HUB + "/api/v1/cve";
 
 interface ApiSearchResult<T> {
   total: number;
@@ -43,6 +46,21 @@ export const getAdvisoryById = (id: number | string) => {
 
 export const downloadAdvisoryById = (id: number | string) => {
   return axios.get(`${ADVISORIES}?id=${id}`, {
+    responseType: "arraybuffer",
+    headers: { Accept: "text/plain", responseType: "blob" },
+  });
+};
+
+export const getCves = (params: HubRequestParams = {}) => {
+  return getHubPaginatedResult<CveIndexed>(`${CVEs}`, params);
+};
+
+export const getCveById = (id: number | string) => {
+  return axios.get<Cve>(`${CVEs}?id=${id}`).then((response) => response.data);
+};
+
+export const downloadCveById = (id: number | string) => {
+  return axios.get(`${CVEs}?id=${id}`, {
     responseType: "arraybuffer",
     headers: { Accept: "text/plain", responseType: "blob" },
   });

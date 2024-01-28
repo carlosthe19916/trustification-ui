@@ -51,6 +51,10 @@ export const serializeSortRequestParamsForHub = (
   const { sort } = deserializedParams;
   if (sort) {
     const { field, direction } = sort;
-    serializedParams.append("sort", `${direction}:${field}`);
+
+    serializedParams.append(
+      "sort",
+      `${direction === "desc" ? "-" : ""}sort:${field}`
+    );
   }
 };

@@ -166,11 +166,16 @@ export const serializeFilterForHub = (filter: HubFilter): string => {
     case "=":
       sikula = (fieldName, fieldValue) => {
         let f = fieldName.split(":");
-        if (f.length > 1) {
-          return `(${fieldValue} in:${f[0]})`;
-        } else {
-          return `${fieldName}:${fieldValue}`;
+        if (f.length == 2) {
+          switch (f[1]) {
+            case "in":
+              return `(${fieldValue} in:${f[0]})`;
+            case "is":
+              return `(is:${fieldValue})`;
+          }
         }
+
+        return `${fieldName}:${fieldValue}`;
       };
       break;
     case "!=":

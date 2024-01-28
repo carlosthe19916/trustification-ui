@@ -53,5 +53,14 @@ export const serializeRequestParamsForHub = (
   serializeFilterRequestParamsForHub(deserializedParams, serializedParams);
   serializeSortRequestParamsForHub(deserializedParams, serializedParams);
   serializePaginationRequestParamsForHub(deserializedParams, serializedParams);
+
+  // Sikula forces sort to have "sorting" data within the query itself
+  // rather than its own queryParams, therefore:
+  serializedParams.set(
+    "q",
+    `${serializedParams.get("q")} (${serializedParams.get("sort")})`
+  );
+  serializedParams.delete("sort");
+
   return serializedParams;
 };

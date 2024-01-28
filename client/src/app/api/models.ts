@@ -1,3 +1,5 @@
+export type WithUiId<T> = T & { _ui_unique_id: string };
+
 export enum MimeType {
   TAR = "tar",
   YAML = "yaml",
@@ -171,3 +173,22 @@ export interface AdvisoryDocument {
     title: string;
   }[];
 }
+
+//
+
+export interface CveIndexed {
+  score: number;
+  document: {
+    related_products: number;
+    related_advisories: number;
+    document: {
+      id: string;
+      title: string;
+      descriptions: string[];
+      cvss3x_score?: number;
+      date_published: string;
+    };
+  };
+}
+
+export interface Cve {}

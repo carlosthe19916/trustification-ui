@@ -38,7 +38,7 @@ export const useFetchSbomById = (id?: number | string) => {
   });
 
   return {
-    advisory: data,
+    sbom: data,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

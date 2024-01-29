@@ -182,7 +182,7 @@ export const AdvisoryList: React.FC = () => {
     expansion: { isCellExpanded },
   } = tableProps;
 
-  const downloadAdvisory = useDownloadAdvisory();
+  const { downloadAdvisory } = useDownloadAdvisory();
 
   return (
     <>

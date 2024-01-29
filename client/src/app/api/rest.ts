@@ -80,6 +80,13 @@ export const getSbomById = (id: number | string) => {
   return axios.get<Sbom>(`${SBOMs}?id=${id}`).then((response) => response.data);
 };
 
+export const downloadSbomById = (id: number | string) => {
+  return axios.get(`${SBOMs}?id=${id}`, {
+    responseType: "arraybuffer",
+    headers: { Accept: "text/plain", responseType: "blob" },
+  });
+};
+
 export const getPackages = (params: HubRequestParams = {}) => {
   return getHubPaginatedResult<PackageIndexed>(`${PACKAGES}/search`, params);
 };

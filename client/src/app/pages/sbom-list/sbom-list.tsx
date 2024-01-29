@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 
 import {
@@ -8,7 +8,6 @@ import {
   useTableState,
 } from "@mturley-latest/react-table-batteries";
 import {
-  Label,
   PageSection,
   PageSectionVariants,
   Text,
@@ -17,7 +16,6 @@ import {
 } from "@patternfly/react-core";
 
 import dayjs from "dayjs";
-import { PackageURL } from "packageurl-js";
 
 import { NotificationsContext } from "@app/components/NotificationsContext";
 import { getHubRequestParams } from "@app/hooks/table-controls";
@@ -26,28 +24,27 @@ import {
   RENDER_DATE_FORMAT,
   TablePersistenceKeyPrefixes,
 } from "@app/Constants";
-import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
 import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
-import { useFetchCves } from "@app/queries/cves";
 import { useFetchSboms } from "@app/queries/sboms";
 import { useFetchPackages } from "@app/queries/packages";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
-export const Packages: React.FC = () => {
+export const SbomList: React.FC = () => {
   const { pushNotification } = React.useContext(NotificationsContext);
 
   const tableState = useTableState({
     persistTo: "sessionStorage",
-    persistenceKeyPrefix: TablePersistenceKeyPrefixes.sboms,
+    persistenceKeyPrefix: TablePersistenceKeyPrefixes.packages,
     columnNames: {
       name: "Name",
-      namespace: "Namespace",
       version: "Version",
-      type: "Type",
-      path: "Path",
-      qualifiers: "Qualifiers",
-      vulnerabilities: "Vulnerabilities",
+      supplier: "Supplier",
+      createdOn: "Created on",
+      dependencies: "Dependencies",
+      productAdvisories: "Product advisories",
+      download: "Download",
+      Report: "Report",
     },
     filter: {
       isEnabled: true,
@@ -87,35 +84,6 @@ export const Packages: React.FC = () => {
             { key: "critical", value: "Critical" },
           ],
         },
-        {
-          key: "datePublished",
-          title: "Revision",
-          placeholderText: "Revision",
-          type: FilterType.select,
-          selectOptions: [
-            {
-              key: `${dayjs().subtract(7, "day").format(DATE_FORMAT)}..${dayjs().format(DATE_FORMAT)}`,
-              value: "Last 7 days",
-            },
-            {
-              key: `${dayjs().subtract(30, "day").format(DATE_FORMAT)}..${dayjs().format(DATE_FORMAT)}`,
-              value: "Last 30 days",
-            },
-            {
-              key: `${dayjs().startOf("year").format(DATE_FORMAT)}..${dayjs().format(DATE_FORMAT)}`,
-              value: "This year",
-            },
-            ...[...Array(3)].map((_, index) => {
-              let date = dayjs()
-                .startOf("year")
-                .subtract(index + 1, "year");
-              return {
-                key: `${date.format(DATE_FORMAT)}..${date.endOf("year").format(DATE_FORMAT)}`,
-                value: date.year(),
-              };
-            }),
-          ],
-        },
       ],
     },
     sort: {
@@ -137,28 +105,13 @@ export const Packages: React.FC = () => {
     });
   }, [cacheKey]);
 
-  const { isFetching, result, fetchError } = useFetchPackages(hubRequestParams);
-
-  const pageItems = useMemo(() => {
-    return result.data.map((e) => {
-      let packageUrl;
-      try {
-        packageUrl = PackageURL.fromString(e.purl);
-      } catch (e) {
-        console.log(e);
-      }
-      return {
-        ...e,
-        package: packageUrl,
-      };
-    });
-  }, [result]);
+  const { isFetching, result, fetchError } = useFetchSboms(hubRequestParams);
 
   const tableProps = useTablePropHelpers({
     ...tableState,
-    idProperty: "purl",
+    idProperty: "id",
     isLoading: isFetching,
-    currentPageItems: pageItems,
+    currentPageItems: result.data,
     totalItemCount: result.total,
   });
 
@@ -186,7 +139,7 @@ export const Packages: React.FC = () => {
     <>
       <PageSection variant={PageSectionVariants.light}>
         <TextContent>
-          <Text component="h1">Packages</Text>
+          <Text component="h1">SBOMs</Text>
           {/* <Text component="p">Search for SBOMs</Text> */}
         </TextContent>
       </PageSection>
@@ -199,29 +152,29 @@ export const Packages: React.FC = () => {
           <Toolbar>
             <ToolbarContent>
               <FilterToolbar
-                id="sbom-toolbar"
+                id="package-toolbar"
                 {...{ showFiltersSideBySide: true }}
               />
               <PaginationToolbarItem>
                 <Pagination
                   variant="top"
                   isCompact
-                  widgetId="sbom-pagination-top"
+                  widgetId="package-pagination-top"
                 />
               </PaginationToolbarItem>
             </ToolbarContent>
           </Toolbar>
 
-          <Table aria-label="Packages details table">
+          <Table aria-label="Package details table">
             <Thead>
               <Tr isHeaderRow>
                 <Th columnKey="name" />
-                <Th columnKey="namespace" />
                 <Th columnKey="version" />
-                <Th columnKey="type" />
-                <Th columnKey="path" />
-                <Th columnKey="qualifiers" />
-                <Th columnKey="vulnerabilities" />
+                <Th columnKey="supplier" />
+                <Th columnKey="createdOn" />
+                <Th columnKey="dependencies" />
+                <Th columnKey="productAdvisories" />
+                <Th columnKey="download" />
               </Tr>
             </Thead>
             <ConditionalTableBody
@@ -233,34 +186,26 @@ export const Packages: React.FC = () => {
               <Tbody>
                 {currentPageItems?.map((item, rowIndex) => {
                   return (
-                    <Tr key={item.purl} item={item} rowIndex={rowIndex}>
-                      <Td width={25} columnKey="name">
-                        <NavLink to={`/packages/${item.purl}`}>
-                          {item.package?.name}
-                        </NavLink>
+                    <Tr key={item.id} item={item} rowIndex={rowIndex}>
+                      <Td width={20} columnKey="name">
+                        <NavLink to={`/sboms/${item.id}`}>{item.name}</NavLink>
                       </Td>
-                      <Td width={10} modifier="truncate" columnKey="namespace">
-                        {item.package?.namespace}
+                      <Td width={15} modifier="truncate" columnKey="version">
+                        {item.version}
                       </Td>
-                      <Td width={15} columnKey="version">
-                        {item.package?.version}
+                      <Td width={20} columnKey="supplier">
+                        {item.supplier}
                       </Td>
-                      <Td width={10} modifier="truncate" columnKey="type">
-                        {item.package?.type}
+                      <Td width={15} modifier="truncate" columnKey="createdOn">
+                        {dayjs(item.created as any).format(RENDER_DATE_FORMAT)}
                       </Td>
-                      <Td width={10} modifier="truncate" columnKey="path">
-                        {item.package?.subpath}
+                      <Td width={10} columnKey="dependencies">
+                        {item.dependencies}
                       </Td>
-                      <Td width={20} columnKey="qualifiers">
-                        {Object.entries(item.package?.qualifiers || {}).map(
-                          ([k, v], index) => (
-                            <Label key={index} isCompact>{`${k}=${v}`}</Label>
-                          )
-                        )}
+                      <Td width={10} columnKey="productAdvisories">
+                        {item.advisories}
                       </Td>
-                      <Td width={10} columnKey="vulnerabilities">
-                        N/A
-                      </Td>
+                      <Td width={10} columnKey="download"></Td>
                     </Tr>
                   );
                 })}
@@ -270,7 +215,7 @@ export const Packages: React.FC = () => {
           <Pagination
             variant="bottom"
             isCompact
-            widgetId="advisories-pagination-bottom"
+            widgetId="packages-pagination-bottom"
           />
         </div>
       </PageSection>

@@ -1,32 +1,27 @@
 import React, { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
+import { CodeEditor, Language } from "@patternfly/react-code-editor";
+import ErrorState from "@patternfly/react-component-groups/dist/dynamic/ErrorState";
 import {
   Breadcrumb,
   BreadcrumbItem,
   Bullseye,
   PageSection,
-  Spinner,
-  Text,
-  TextContent,
+  Spinner
 } from "@patternfly/react-core";
-import { CodeEditor, Language } from "@patternfly/react-code-editor";
-import ErrorState from "@patternfly/react-component-groups/dist/dynamic/ErrorState";
 
-import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
-import spacing from "@patternfly/react-styles/css/utilities/Spacing/spacing";
 import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
+import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
-import ReactMarkdown from "react-markdown";
-import { markdownPFComponents } from "@app/components/markdownPFComponents";
 
 import { PathParam, useRouteParams } from "@app/Routes";
+import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
+import { RHSeverityShield } from "@app/components/csaf/rh-severity";
+import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
 import { useFetchAdvisoryById } from "@app/queries/advisories";
 import { Overview } from "./overview";
-import { RHSeverityShield } from "@app/components/csaf/rh-severity";
 import { Vulnerabilities } from "./vulnerabilities";
-import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
-import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
 
 export const LoadingWrapper = (props: {
   isFetching: boolean;
@@ -46,7 +41,7 @@ export const LoadingWrapper = (props: {
   }
 };
 
-export const Advisory: React.FC = () => {
+export const AdvisoryDetails: React.FC = () => {
   const advisoryId = useRouteParams(PathParam.ADVISORY_ID);
   const { advisory, isFetching, fetchError } = useFetchAdvisoryById(advisoryId);
 

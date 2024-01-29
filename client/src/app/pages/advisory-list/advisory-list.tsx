@@ -39,7 +39,7 @@ import { TablePersistenceKeyPrefixes } from "@app/Constants";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
-export const Advisories: React.FC = () => {
+export const AdvisoryList: React.FC = () => {
   const { pushNotification } = React.useContext(NotificationsContext);
 
   const tableState = useTableState({

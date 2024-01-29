@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { NavLink } from "react-router-dom";
 
 import {
@@ -8,14 +8,16 @@ import {
   useTableState,
 } from "@mturley-latest/react-table-batteries";
 import {
+  Label,
   PageSection,
   PageSectionVariants,
   Text,
   TextContent,
-  ToolbarContent
+  ToolbarContent,
 } from "@patternfly/react-core";
 
 import dayjs from "dayjs";
+import { PackageURL } from "packageurl-js";
 
 import { NotificationsContext } from "@app/components/NotificationsContext";
 import { getHubRequestParams } from "@app/hooks/table-controls";
@@ -27,21 +29,25 @@ import {
 import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
 import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
 import { useFetchCves } from "@app/queries/cves";
+import { useFetchSboms } from "@app/queries/sboms";
+import { useFetchPackages } from "@app/queries/packages";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
-export const Cves: React.FC = () => {
+export const Packages: React.FC = () => {
   const { pushNotification } = React.useContext(NotificationsContext);
 
   const tableState = useTableState({
     persistTo: "sessionStorage",
-    persistenceKeyPrefix: TablePersistenceKeyPrefixes.cves,
+    persistenceKeyPrefix: TablePersistenceKeyPrefixes.sboms,
     columnNames: {
-      id: "ID",
-      description: "Description",
-      cvss: "CVSS",
-      datePublished: "Date published",
-      relatedDocuments: "Related documents",
+      name: "Name",
+      namespace: "Namespace",
+      version: "Version",
+      type: "Type",
+      path: "Path",
+      qualifiers: "Qualifiers",
+      vulnerabilities: "Vulnerabilities",
     },
     filter: {
       isEnabled: true,
@@ -53,13 +59,20 @@ export const Cves: React.FC = () => {
           type: FilterType.search,
         },
         {
-          key: "state:is",
-          title: "State",
-          placeholderText: "State",
-          type: FilterType.select,
+          key: "pkg",
+          title: "Products",
+          placeholderText: "Products",
+          type: FilterType.multiselect,
           selectOptions: [
-            { key: "published", value: "Published" },
-            { key: "rejected", value: "Rejected" },
+            { key: "oci/ubi7", value: "UBI 7" },
+            { key: "oci/ubi8", value: "UBI 8" },
+            { key: "oci/ubi9", value: "UBI 9" },
+            {
+              key: "/o:redhat:enterprise_linux:7",
+              value: "Red Hat Enterprise Linux 7",
+            },
+            { key: "rejected", value: "Red Hat Enterprise Linux 8" },
+            { key: "rejected", value: "Red Hat Enterprise Linux 9" },
           ],
         },
         {
@@ -107,7 +120,7 @@ export const Cves: React.FC = () => {
     },
     sort: {
       isEnabled: true,
-      sortableColumns: ["cvss", "datePublished"],
+      sortableColumns: [],
       persistTo: "state",
     },
     pagination: { isEnabled: true },
@@ -119,19 +132,33 @@ export const Cves: React.FC = () => {
       ...tableState,
       filterCategories: filter.filterCategories,
       hubSortFieldKeys: {
-        cvss: "score",
-        datePublished: "datePublished",
+        created: "created",
       },
     });
   }, [cacheKey]);
 
-  const { isFetching, result, fetchError } = useFetchCves(hubRequestParams);
+  const { isFetching, result, fetchError } = useFetchPackages(hubRequestParams);
+
+  const pageItems = useMemo(() => {
+    return result.data.map((e) => {
+      let packageUrl;
+      try {
+        packageUrl = PackageURL.fromString(e.purl);
+      } catch (e) {
+        console.log(e);
+      }
+      return {
+        ...e,
+        package: packageUrl,
+      };
+    });
+  }, [result]);
 
   const tableProps = useTablePropHelpers({
     ...tableState,
-    idProperty: "_ui_unique_id",
+    idProperty: "purl",
     isLoading: isFetching,
-    currentPageItems: result.data,
+    currentPageItems: pageItems,
     totalItemCount: result.total,
   });
 
@@ -159,8 +186,8 @@ export const Cves: React.FC = () => {
     <>
       <PageSection variant={PageSectionVariants.light}>
         <TextContent>
-          <Text component="h1">CVEs</Text>
-          {/* <Text component="p">Search for CVEs</Text> */}
+          <Text component="h1">Packages</Text>
+          {/* <Text component="p">Search for SBOMs</Text> */}
         </TextContent>
       </PageSection>
       <PageSection>
@@ -172,27 +199,29 @@ export const Cves: React.FC = () => {
           <Toolbar>
             <ToolbarContent>
               <FilterToolbar
-                id="cve-toolbar"
+                id="sbom-toolbar"
                 {...{ showFiltersSideBySide: true }}
               />
               <PaginationToolbarItem>
                 <Pagination
                   variant="top"
                   isCompact
-                  widgetId="cve-pagination-top"
+                  widgetId="sbom-pagination-top"
                 />
               </PaginationToolbarItem>
             </ToolbarContent>
           </Toolbar>
 
-          <Table aria-label="CVE details table">
+          <Table aria-label="Packages details table">
             <Thead>
               <Tr isHeaderRow>
-                <Th columnKey="id" />
-                <Th columnKey="description" />
-                <Th columnKey="cvss" />
-                <Th columnKey="datePublished" />
-                <Th columnKey="relatedDocuments" />
+                <Th columnKey="name" />
+                <Th columnKey="namespace" />
+                <Th columnKey="version" />
+                <Th columnKey="type" />
+                <Th columnKey="path" />
+                <Th columnKey="qualifiers" />
+                <Th columnKey="vulnerabilities" />
               </Tr>
             </Thead>
             <ConditionalTableBody
@@ -204,44 +233,33 @@ export const Cves: React.FC = () => {
               <Tbody>
                 {currentPageItems?.map((item, rowIndex) => {
                   return (
-                    <Tr
-                      key={item.document.document.id}
-                      item={item}
-                      rowIndex={rowIndex}
-                    >
-                      <Td width={15} columnKey="id">
-                        <NavLink to={`/cves/${item.document.document.id}`}>
-                          {item.document.document.id}
+                    <Tr key={item.purl} item={item} rowIndex={rowIndex}>
+                      <Td width={25} columnKey="name">
+                        <NavLink to={`/packages/${item.purl}`}>
+                          {item.package?.name}
                         </NavLink>
                       </Td>
-                      <Td
-                        width={50}
-                        modifier="truncate"
-                        columnKey="description"
-                      >
-                        {item.document.document.title ||
-                          item.document.document.descriptions}
+                      <Td width={10} modifier="truncate" columnKey="namespace">
+                        {item.package?.namespace}
                       </Td>
-                      <Td width={15} columnKey="cvss">
-                        {item.document.document.cvss3x_score !== null &&
-                          item.document.document.cvss3x_score !== undefined && (
-                            <SeverityRenderer
-                              variant="progress"
-                              score={item.document.document.cvss3x_score}
-                            />
-                          )}
+                      <Td width={15} columnKey="version">
+                        {item.package?.version}
                       </Td>
-                      <Td
-                        width={10}
-                        modifier="truncate"
-                        columnKey="datePublished"
-                      >
-                        {dayjs(item.document.document.date_published).format(
-                          RENDER_DATE_FORMAT
+                      <Td width={10} modifier="truncate" columnKey="type">
+                        {item.package?.type}
+                      </Td>
+                      <Td width={10} modifier="truncate" columnKey="path">
+                        {item.package?.subpath}
+                      </Td>
+                      <Td width={20} columnKey="qualifiers">
+                        {Object.entries(item.package?.qualifiers || {}).map(
+                          ([k, v], index) => (
+                            <Label key={index} isCompact>{`${k}=${v}`}</Label>
+                          )
                         )}
                       </Td>
-                      <Td width={10} columnKey="relatedDocuments">
-                        {item.document.related_products}
+                      <Td width={10} columnKey="vulnerabilities">
+                        N/A
                       </Td>
                     </Tr>
                   );

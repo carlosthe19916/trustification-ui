@@ -5,6 +5,8 @@ export const RENDER_DATE_FORMAT = "MMM DD, YYYY";
 export const TablePersistenceKeyPrefixes = {
   advisories: "ad",
   cves: "cv",
+  sboms: "sb",
+  packages: "pk",
 };
 
 // URL param prefixes: should be short, must be unique for each table that uses one

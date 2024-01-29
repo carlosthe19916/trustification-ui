@@ -7,6 +7,10 @@ import {
   Advisory,
   CveIndexed,
   Cve,
+  SbomIndexed,
+  Sbom,
+  PackageIndexed,
+  Package,
 } from "./models";
 import { serializeRequestParamsForHub } from "@app/hooks/table-controls";
 
@@ -14,6 +18,8 @@ const HUB = "/hub";
 
 export const ADVISORIES = HUB + "/api/v1/advisory";
 export const CVEs = HUB + "/api/v1/cve";
+export const SBOMs = HUB + "/api/v1/sbom";
+export const PACKAGES = HUB + "/api/v1/package";
 
 interface ApiSearchResult<T> {
   total: number;
@@ -64,4 +70,22 @@ export const downloadCveById = (id: number | string) => {
     responseType: "arraybuffer",
     headers: { Accept: "text/plain", responseType: "blob" },
   });
+};
+
+export const getSboms = (params: HubRequestParams = {}) => {
+  return getHubPaginatedResult<SbomIndexed>(`${SBOMs}/search`, params);
+};
+
+export const getSbomById = (id: number | string) => {
+  return axios.get<Sbom>(`${SBOMs}?id=${id}`).then((response) => response.data);
+};
+
+export const getPackages = (params: HubRequestParams = {}) => {
+  return getHubPaginatedResult<PackageIndexed>(`${PACKAGES}/search`, params);
+};
+
+export const getPackageById = (id: number | string) => {
+  return axios
+    .get<Package>(`${PACKAGES}?id=${id}`)
+    .then((response) => response.data);
 };

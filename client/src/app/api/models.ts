@@ -192,3 +192,21 @@ export interface CveIndexed {
 }
 
 export interface Cve {}
+
+export interface SbomIndexed {
+  id: string;
+  name: string;
+  version?: string;
+  supplier: string;
+  created: number[];
+  dependencies: number;
+  advisories?: number;
+}
+
+export interface Sbom {}
+
+export interface PackageIndexed {
+  purl: string;
+}
+
+export interface Package {}

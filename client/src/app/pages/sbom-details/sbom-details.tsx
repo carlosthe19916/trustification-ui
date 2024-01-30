@@ -28,10 +28,10 @@ import {
   useFetchSbomVulnerabilitiesById,
 } from "@app/queries/sboms";
 import { LoadingWrapper } from "@app/components/LoadingWrapper";
-import { VulnerabilitiresChart } from "./vulnerabilitires-chart";
+import { VulnerabilitiresChart } from "./vulnerabilities-chart";
 import dayjs from "dayjs";
 import { RENDER_DATE_FORMAT } from "@app/Constants";
-import { VulnerabilitiresTable } from "./vulnerabilitires-table";
+import { VulnerabilitiresTable } from "./vulnerabilities-table";
 
 export const SbomDetails: React.FC = () => {
   const sbomId = useRouteParams(PathParam.SBOM_ID);

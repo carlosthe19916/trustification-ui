@@ -1,10 +1,15 @@
-import { AxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
-import { getAdvisoryById, getAdvisories } from "@app/api/rest";
 import { HubRequestParams } from "@app/api/models";
+import {
+  getAdvisories,
+  getAdvisoryByCveId,
+  getAdvisoryById,
+} from "@app/api/rest";
 
 export const AdvisoriesQueryKey = "advisories";
+export const AdvisoriesCveQueryKey = "advisories-cve";
 
 export const useFetchAdvisories = (params: HubRequestParams = {}) => {
   const { data, isLoading, error, refetch } = useQuery({
@@ -29,6 +34,23 @@ export const useFetchAdvisoryById = (id?: number | string) => {
     queryFn: () =>
       id === undefined ? Promise.resolve(undefined) : getAdvisoryById(id),
     enabled: id !== undefined,
+  });
+
+  return {
+    advisory: data,
+    isFetching: isLoading,
+    fetchError: error as AxiosError,
+  };
+};
+
+export const useFetchAdvisoryByCveId = (cveId?: number | string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: [AdvisoriesCveQueryKey, cveId],
+    queryFn: () =>
+      cveId === undefined
+        ? Promise.resolve(undefined)
+        : getAdvisoryByCveId(cveId),
+    enabled: cveId !== undefined,
   });
 
   return {

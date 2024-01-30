@@ -22,14 +22,8 @@ import { PackageURL } from "packageurl-js";
 import { NotificationsContext } from "@app/components/NotificationsContext";
 import { getHubRequestParams } from "@app/hooks/table-controls";
 
-import {
-  RENDER_DATE_FORMAT,
-  TablePersistenceKeyPrefixes,
-} from "@app/Constants";
-import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
+import { TablePersistenceKeyPrefixes } from "@app/Constants";
 import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
-import { useFetchCves } from "@app/queries/cves";
-import { useFetchSboms } from "@app/queries/sboms";
 import { useFetchPackages } from "@app/queries/packages";
 
 const DATE_FORMAT = "YYYY-MM-DD";

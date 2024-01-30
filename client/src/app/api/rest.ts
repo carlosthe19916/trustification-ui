@@ -58,6 +58,22 @@ export const downloadAdvisoryById = (id: number | string) => {
   });
 };
 
+export const getAdvisoryByCveId = (cveId: number | string) => {
+  return getHubPaginatedResult<SbomIndexed>(`${ADVISORIES}/search`, {
+    filters: [
+      {
+        field: "cve",
+        value: cveId,
+        operator: "=",
+      },
+    ],
+  }).then((response) =>
+    response.data.length === 1 ? response.data[0] : undefined
+  );
+};
+
+//
+
 export const getCves = (params: HubRequestParams = {}) => {
   return getHubPaginatedResult<CveIndexed>(`${CVEs}`, params);
 };

@@ -1,4 +1,11 @@
-import { ToolbarContent } from "@patternfly/react-core";
+import {
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
+  Label,
+  ToolbarContent,
+} from "@patternfly/react-core";
 import {
   ExpandableRowContent,
   IExtraData,
@@ -9,16 +16,18 @@ import {
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-import dayjs from "dayjs";
 import {
   ConditionalTableBody,
   FilterType,
-  useClientTableBatteries,
+  useClientTableBatteries
 } from "@mturley-latest/react-table-batteries";
+import dayjs from "dayjs";
 
 import { RENDER_DATE_FORMAT } from "@app/Constants";
 import { SbomVulnerabilities } from "@app/api/models";
 import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
+import { useFetchAdvisoryByCveId } from "@app/queries/advisories";
+import { PackageURL } from "packageurl-js";
 
 interface VulnerabilitiresTableProps {
   isFetching: boolean;
@@ -200,11 +209,19 @@ export const VulnerabilitiresTable: React.FC<VulnerabilitiresTableProps> = ({
                   <PFTr isExpanded>
                     <PFTd colSpan={7}>
                       <ExpandableRowContent>
-                        {isCellExpanded(item, "id") && <>id</>}
-                        {isCellExpanded(item, "affectedDependencies") && (
-                          <>packages</>
+                        {isCellExpanded(item, "id") && (
+                          <CVEDetails
+                            id={item.id}
+                            description={item.description}
+                          />
                         )}
-                        all
+                        {isCellExpanded(item, "affectedDependencies") && (
+                          <AffectedDependenciesTable
+                            data={Array.from(
+                              Object.keys(item.affected_packages || {})
+                            )}
+                          />
+                        )}
                       </ExpandableRowContent>
                     </PFTd>
                   </PFTr>
@@ -220,5 +237,145 @@ export const VulnerabilitiresTable: React.FC<VulnerabilitiresTableProps> = ({
         widgetId="vulnerabilities-pagination-bottom"
       />
     </>
+  );
+};
+
+const AffectedDependenciesTable = ({ data }: { data: string[] }) => {
+  const pageItems = React.useMemo(() => {
+    return data.map((e) => {
+      let packageUrl;
+      try {
+        packageUrl = PackageURL.fromString(e);
+      } catch (e) {
+        console.log(e);
+      }
+      return {
+        purl: e,
+        package: packageUrl,
+      };
+    });
+  }, [data]);
+
+  const tableControls = useClientTableBatteries({
+    variant: "compact",
+    persistTo: "state",
+    idProperty: "purl",
+    items: pageItems || [],
+    isLoading: false,
+    columnNames: {
+      type: "Type",
+      namespace: "Namespace",
+      name: "Name",
+      version: "Version",
+      path: "Path",
+      qualifiers: "Qualifiers",
+    },
+    filter: {
+      isEnabled: true,
+      filterCategories: [],
+    },
+    sort: {
+      isEnabled: true,
+      sortableColumns: [],
+    },
+  });
+
+  const {
+    currentPageItems,
+    numRenderedColumns,
+    components: {
+      Table,
+      Thead,
+      Tr,
+      Th,
+      Tbody,
+      Td,
+      Toolbar,
+      FilterToolbar,
+      PaginationToolbarItem,
+      Pagination,
+    },
+    expansion: { isCellExpanded, setCellExpanded },
+  } = tableControls;
+
+  return (
+    <>
+      <Table aria-label="Packages details table">
+        <Thead>
+          <Tr isHeaderRow>
+            <Th columnKey="type" />
+            <Th columnKey="namespace" />
+            <Th columnKey="name" />
+            <Th columnKey="version" />
+            <Th columnKey="path" />
+            <Th columnKey="qualifiers" />
+          </Tr>
+        </Thead>
+        <ConditionalTableBody
+          isNoData={pageItems.length === 0}
+          numRenderedColumns={numRenderedColumns}
+        >
+          <Tbody>
+            {currentPageItems?.map((item, rowIndex) => {
+              return (
+                <Tr key={item.purl} item={item} rowIndex={rowIndex}>
+                  <Td width={15} columnKey="type">
+                    {item.package?.type}
+                  </Td>
+                  <Td width={15} modifier="truncate" columnKey="namespace">
+                    {item.package?.namespace}
+                  </Td>
+                  <Td width={15} columnKey="name">
+                    <NavLink to={`/packages/${item.purl}`}>
+                      {item.package?.name}
+                    </NavLink>
+                  </Td>
+                  <Td width={15} columnKey="version">
+                    {item.package?.version}
+                  </Td>
+                  <Td width={10} modifier="truncate" columnKey="path">
+                    {item.package?.subpath}
+                  </Td>
+                  <Td width={30} columnKey="qualifiers">
+                    {Object.entries(item.package?.qualifiers || {}).map(
+                      ([k, v], index) => (
+                        <Label key={index} isCompact>{`${k}=${v}`}</Label>
+                      )
+                    )}
+                  </Td>
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </ConditionalTableBody>
+      </Table>
+    </>
+  );
+};
+
+const CVEDetails = ({
+  id,
+  description,
+}: {
+  id: string;
+  description: string;
+}) => {
+  const { advisory } = useFetchAdvisoryByCveId(id);
+
+  return (
+    <DescriptionList isCompact>
+      {advisory && (
+        <DescriptionListGroup>
+          <DescriptionListTerm>Relevant advisories</DescriptionListTerm>
+          <DescriptionListDescription>
+            <NavLink to={`/advisories/${advisory.id}`}>{advisory.id}</NavLink>
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+      )}
+      <DescriptionListGroup>
+        <DescriptionListTerm>Description</DescriptionListTerm>
+        <DescriptionListDescription>{description}</DescriptionListDescription>
+      </DescriptionListGroup>
+    </DescriptionList>
   );
 };

@@ -205,6 +205,25 @@ export interface SbomIndexed {
 
 export interface Sbom {}
 
+export interface SbomVulnerabilities {
+  version: string;
+  name: string;
+  created: number[];
+  details: {
+    id: string;
+    description: string;
+    published?: number[];
+    updated?: number[];
+    affected_packages?: { [k: string]: string };
+    sources?: {
+      mitre?: {
+        score: number;
+      };
+    };
+  }[];
+  summary: (string | { severity?: string; count: number }[])[][];
+}
+
 export interface PackageIndexed {
   purl: string;
 }

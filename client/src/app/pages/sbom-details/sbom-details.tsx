@@ -5,7 +5,16 @@ import { CodeEditor, Language } from "@patternfly/react-code-editor";
 import {
   Breadcrumb,
   BreadcrumbItem,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
+  Grid,
+  GridItem,
+  Label,
   PageSection,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core";
 
 import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
@@ -13,17 +22,51 @@ import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
 import { PathParam, useRouteParams } from "@app/Routes";
 import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
-import { useFetchSbomById } from "@app/queries/sboms";
+import {
+  useFetchSbomById,
+  useFetchSbomIndexedById,
+  useFetchSbomVulnerabilitiesById,
+} from "@app/queries/sboms";
+import { LoadingWrapper } from "@app/components/LoadingWrapper";
+import { VulnerabilitiresChart } from "./vulnerabilitires-chart";
+import dayjs from "dayjs";
+import { RENDER_DATE_FORMAT } from "@app/Constants";
+import { VulnerabilitiresTable } from "./vulnerabilitires-table";
 
 export const SbomDetails: React.FC = () => {
   const sbomId = useRouteParams(PathParam.SBOM_ID);
-  const { sbom, isFetching, fetchError } = useFetchSbomById(sbomId);
+
+  const {
+    sbom,
+    isFetching: isFetchingSbom,
+    fetchError: fetchErrorSbom,
+  } = useFetchSbomById(sbomId);
+
+  const {
+    sbom: sbomIndexed,
+    isFetching: isFetchingSbomIndexed,
+    fetchError: fetchErrorSbomIndexed,
+  } = useFetchSbomIndexedById(sbomId);
+
+  const {
+    vulnerabilities: sbomVulnerabilities,
+    isFetching: isFetchingSbomVulnerabilities,
+    fetchError: fetchErrorSbomVulnerabilities,
+  } = useFetchSbomVulnerabilitiesById(sbomId);
 
   const sbomString = useMemo(() => {
     return JSON.stringify(sbom, null, 2);
   }, [sbom]);
 
   const { downloadSbom } = useDownloadAdvisory();
+
+  let vulnerabilities = useMemo(() => {
+    return sbomVulnerabilities && sbomVulnerabilities.summary.length === 1
+      ? (sbomVulnerabilities.summary[0].reduce((prev: any, current: any) => {
+          return typeof current === "string" ? prev : current;
+        }, []) as { severity?: string; count: number }[])
+      : [];
+  }, [sbomVulnerabilities]);
 
   return (
     <>
@@ -41,14 +84,11 @@ export const SbomDetails: React.FC = () => {
           }
           pageHeading={{
             title: sbomId ?? "",
-            // label: {
-            //   children: sbom ? (
-            //     <RHSeverityShield
-            //       value={sbom.document.aggregate_severity.text}
-            //     />
-            //   ) : null,
-            //   isCompact: true,
-            // },
+            label: {
+              children: "SPDX", // TODO
+              isCompact: true,
+              color: "blue",
+            },
           }}
           actionButtons={[
             {
@@ -71,12 +111,72 @@ export const SbomDetails: React.FC = () => {
               title: "Overview",
               children: (
                 <div className="pf-v5-u-m-md">
-                  {/* <LoadingWrapper
-                    isFetching={isFetching}
-                    fetchError={fetchError}
-                  >
-                    {sbom && <Overview advisory={sbom} />}
-                  </LoadingWrapper> */}
+                  <Stack hasGutter>
+                    <StackItem>
+                      <PageSection hasShadowBottom>
+                        <Grid>
+                          <GridItem md={6}>
+                            <LoadingWrapper
+                              isFetching={isFetchingSbomVulnerabilities}
+                              fetchError={fetchErrorSbomVulnerabilities}
+                            >
+                              <VulnerabilitiresChart
+                                data={vulnerabilities || []}
+                              />
+                            </LoadingWrapper>
+                          </GridItem>
+                          <GridItem md={6}>
+                            <LoadingWrapper
+                              isFetching={isFetchingSbomIndexed}
+                              fetchError={fetchErrorSbomIndexed}
+                            >
+                              <DescriptionList>
+                                <DescriptionListGroup>
+                                  <DescriptionListTerm>
+                                    Name
+                                  </DescriptionListTerm>
+                                  <DescriptionListDescription>
+                                    {sbomIndexed?.name}
+                                  </DescriptionListDescription>
+                                </DescriptionListGroup>
+                                <DescriptionListGroup>
+                                  <DescriptionListTerm>
+                                    Version
+                                  </DescriptionListTerm>
+                                  <DescriptionListDescription>
+                                    {sbomIndexed?.version}
+                                  </DescriptionListDescription>
+                                </DescriptionListGroup>
+                                <DescriptionListGroup>
+                                  <DescriptionListTerm>
+                                    Created
+                                  </DescriptionListTerm>
+                                  <DescriptionListDescription>
+                                    {sbomIndexed &&
+                                      dayjs(sbomIndexed.created as any).format(
+                                        RENDER_DATE_FORMAT
+                                      )}
+                                  </DescriptionListDescription>
+                                </DescriptionListGroup>
+                              </DescriptionList>
+                            </LoadingWrapper>
+                          </GridItem>
+                        </Grid>
+                      </PageSection>
+                    </StackItem>
+                    <StackItem>
+                      <LoadingWrapper
+                        isFetching={isFetchingSbomVulnerabilities}
+                        fetchError={fetchErrorSbomVulnerabilities}
+                      >
+                        <VulnerabilitiresTable
+                          isFetching={isFetchingSbomVulnerabilities}
+                          fetchError={fetchErrorSbomVulnerabilities}
+                          sbomVulnerabilitires={sbomVulnerabilities}
+                        />
+                      </LoadingWrapper>
+                    </StackItem>
+                  </Stack>
                 </div>
               ),
             },

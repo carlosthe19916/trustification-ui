@@ -11,6 +11,7 @@ import {
   Sbom,
   PackageIndexed,
   Package,
+  SbomVulnerabilities,
 } from "./models";
 import { serializeRequestParamsForHub } from "@app/hooks/table-controls";
 
@@ -85,6 +86,26 @@ export const downloadSbomById = (id: number | string) => {
     responseType: "arraybuffer",
     headers: { Accept: "text/plain", responseType: "blob" },
   });
+};
+
+export const getSbomIndexedById = (id: number | string) => {
+  return getHubPaginatedResult<SbomIndexed>(`${SBOMs}/search`, {
+    filters: [
+      {
+        field: "id",
+        value: id,
+        operator: "=",
+      },
+    ],
+  }).then((response) =>
+    response.data.length === 1 ? response.data[0] : undefined
+  );
+};
+
+export const getSbomVulnerabilitiesById = (id: number | string) => {
+  return axios
+    .get<SbomVulnerabilities>(`${SBOMs}/vulnerabilities?id=${id}`)
+    .then((response) => response.data);
 };
 
 export const getPackages = (params: HubRequestParams = {}) => {

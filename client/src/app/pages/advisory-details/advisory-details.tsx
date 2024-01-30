@@ -2,43 +2,24 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { CodeEditor, Language } from "@patternfly/react-code-editor";
-import ErrorState from "@patternfly/react-component-groups/dist/dynamic/ErrorState";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  Bullseye,
-  PageSection,
-  Spinner,
+  PageSection
 } from "@patternfly/react-core";
 
 import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
 import { PathParam, useRouteParams } from "@app/Routes";
+import { LoadingWrapper } from "@app/components/LoadingWrapper";
 import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
 import { RHSeverityShield } from "@app/components/csaf/rh-severity";
 import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
 import { useFetchAdvisoryById } from "@app/queries/advisories";
+
 import { Overview } from "./overview";
 import { Vulnerabilities } from "./vulnerabilities";
-
-export const LoadingWrapper = (props: {
-  isFetching: boolean;
-  fetchError?: Error;
-  children: React.ReactNode;
-}) => {
-  if (props.isFetching) {
-    return (
-      <Bullseye>
-        <Spinner />
-      </Bullseye>
-    );
-  } else if (props.fetchError) {
-    return <ErrorState errorTitle="Error" />;
-  } else {
-    return props.children;
-  }
-};
 
 export const AdvisoryDetails: React.FC = () => {
   const advisoryId = useRouteParams(PathParam.ADVISORY_ID);

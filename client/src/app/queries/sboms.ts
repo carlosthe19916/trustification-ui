@@ -2,9 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
 import { HubRequestParams } from "@app/api/models";
-import { getSbomById, getSboms } from "@app/api/rest";
+import {
+  getSbomById,
+  getSbomIndexedById,
+  getSbomVulnerabilitiesById,
+  getSboms,
+} from "@app/api/rest";
 
 export const SbomsQueryKey = "sboms";
+export const SbomsIndexedQueryKey = "sboms-indexed";
+export const SbomsVulnerabilitiresQueryKey = "sboms-vulnerabilities";
 
 export const useFetchSboms = (params: HubRequestParams = {}) => {
   const {
@@ -13,7 +20,7 @@ export const useFetchSboms = (params: HubRequestParams = {}) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: [SbomsQueryKey, params],
+    queryKey: [SbomsIndexedQueryKey, params],
     queryFn: () => getSboms(params),
   });
 
@@ -39,6 +46,38 @@ export const useFetchSbomById = (id?: number | string) => {
 
   return {
     sbom: data,
+    isFetching: isLoading,
+    fetchError: error as AxiosError,
+  };
+};
+
+export const useFetchSbomIndexedById = (id?: number | string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: [SbomsIndexedQueryKey, id],
+    queryFn: () =>
+      id === undefined ? Promise.resolve(undefined) : getSbomIndexedById(id),
+    enabled: id !== undefined,
+  });
+
+  return {
+    sbom: data,
+    isFetching: isLoading,
+    fetchError: error as AxiosError,
+  };
+};
+
+export const useFetchSbomVulnerabilitiesById = (id?: number | string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: [SbomsVulnerabilitiresQueryKey, id],
+    queryFn: () =>
+      id === undefined
+        ? Promise.resolve(undefined)
+        : getSbomVulnerabilitiesById(id),
+    enabled: id !== undefined,
+  });
+
+  return {
+    vulnerabilities: data,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

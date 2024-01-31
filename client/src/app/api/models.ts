@@ -248,7 +248,25 @@ export interface SPDXPackage {
   }[];
 }
 
-export interface SbomCycloneDx {}
+export interface SbomCycloneDx {
+  serialNumber: string;
+  specVersion: string;
+  metadata: {
+    timestamp: string;
+    component: {
+      name: string;
+      version: string;
+      externalReferences?: {
+        type: string;
+        url: string;
+      }[];
+      licenses?: {
+        license: { id: string };
+      }[];
+    };
+  };
+  components: {}[];
+}
 
 export interface SbomVulnerabilities {
   version: string;

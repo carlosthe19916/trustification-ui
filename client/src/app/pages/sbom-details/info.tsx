@@ -189,10 +189,118 @@ interface CycloneDxInfoProps {
   size: number;
 }
 
-export const CycloneDxInfo: React.FC<CycloneDxInfoProps> = ({ sbom }) => {
+export const CycloneDxInfo: React.FC<CycloneDxInfoProps> = ({ sbom, size }) => {
   return (
     <>
-      <div style={{ height: "230px", width: "350px" }}></div>
+      <Grid hasGutter>
+        <GridItem md={6}>
+          <Card isFullHeight>
+            <CardTitle>Metadata</CardTitle>
+            <CardBody>
+              <DescriptionList>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Name</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.metadata.component.name}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Serial number</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.serialNumber}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Spec version</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.specVersion}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Data license</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.metadata.component.licenses?.map((e) => e.license.id)}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+            </CardBody>
+          </Card>
+        </GridItem>
+        <GridItem md={3}>
+          <Card isFullHeight>
+            <CardTitle>Creation</CardTitle>
+            <CardBody>
+              <DescriptionList>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Created</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {dayjs(sbom.metadata.timestamp).format(RENDER_DATE_FORMAT)}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+            </CardBody>
+          </Card>
+        </GridItem>
+        <GridItem md={3}>
+          <Card isFullHeight>
+            <CardTitle>Statistics</CardTitle>
+            <CardBody>
+              <DescriptionList>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>size</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {prettyBytes(size)}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Packages</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.components.length}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+            </CardBody>
+          </Card>
+        </GridItem>
+        <GridItem md={12}>
+          <Card isFullHeight>
+            <CardTitle>Package</CardTitle>
+            <CardBody>
+              <DescriptionList>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Name</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.metadata.component.name}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Version</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {sbom.metadata.component.version}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>External references</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    <List>
+                      {sbom.metadata.component.externalReferences?.map(
+                        (e, index) => (
+                          <ListItem key={index}>
+                            {e.url}{" "}
+                            <Label color="blue" isCompact>
+                              {e.type}
+                            </Label>
+                          </ListItem>
+                        )
+                      )}
+                    </List>
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+            </CardBody>
+          </Card>
+        </GridItem>
+      </Grid>
     </>
   );
 };

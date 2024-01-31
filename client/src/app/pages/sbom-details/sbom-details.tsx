@@ -84,7 +84,7 @@ export const SbomDetails: React.FC = () => {
             </Breadcrumb>
           }
           pageHeading={{
-            title: sbomId ?? "",
+            title: sbomIndexed?.name ?? sbomId ?? "",
             label: {
               children:
                 sbom?.type === SbomType.SPDX

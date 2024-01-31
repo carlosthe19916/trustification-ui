@@ -52,9 +52,9 @@ export const useFetchSbomById = (id?: number | string) => {
 
   const sbom: Sbom | undefined = data
     ? "spdxVersion" in data
-      ? { type: SbomType.SPDX, sbom: data as SbomSPDX }
+      ? { type: SbomType.SPDX, sbom: data as any as SbomSPDX }
       : "bomFormat" in data
-        ? { type: SbomType.CycloneDx, sbom: data as SbomCycloneDx }
+        ? { type: SbomType.CycloneDx, sbom: data as any as SbomCycloneDx }
         : { type: SbomType.Unknown, sbom: data }
     : undefined;
 

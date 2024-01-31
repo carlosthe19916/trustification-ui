@@ -15,7 +15,7 @@ import { PathParam, useRouteParams } from "@app/Routes";
 import { LoadingWrapper } from "@app/components/LoadingWrapper";
 import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
 import { RHSeverityShield } from "@app/components/csaf/rh-severity";
-import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
+import { useDownload } from "@app/hooks/csaf/download-advisory";
 import { useFetchAdvisoryById } from "@app/queries/advisories";
 
 import { Overview } from "./overview";
@@ -29,7 +29,7 @@ export const AdvisoryDetails: React.FC = () => {
     return JSON.stringify(advisory, null, 2);
   }, [advisory]);
 
-  const { downloadAdvisory } = useDownloadAdvisory();
+  const { downloadAdvisory } = useDownload();
 
   return (
     <>

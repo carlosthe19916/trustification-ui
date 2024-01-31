@@ -23,7 +23,7 @@ import { NotificationsContext } from "@app/components/NotificationsContext";
 import { getHubRequestParams } from "@app/hooks/table-controls";
 
 import { TablePersistenceKeyPrefixes } from "@app/Constants";
-import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
+import { useDownload } from "@app/hooks/csaf/download-advisory";
 import { useFetchPackages } from "@app/queries/packages";
 
 const DATE_FORMAT = "YYYY-MM-DD";
@@ -174,7 +174,7 @@ export const PackageList: React.FC = () => {
     expansion: { isCellExpanded },
   } = tableProps;
 
-  const downloadAdvisory = useDownloadAdvisory();
+  const downloadAdvisory = useDownload();
 
   return (
     <>

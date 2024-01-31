@@ -32,7 +32,7 @@ import { formatRustDate } from "@app/utils/utils";
 
 import { RHSeverityShield } from "@app/components/csaf/rh-severity";
 
-import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
+import { useDownload } from "@app/hooks/csaf/download-advisory";
 import { AdvisoryDetails } from "./advisory-details";
 import { VulnerabilitiesCount } from "./vulnerabilities";
 import { TablePersistenceKeyPrefixes } from "@app/Constants";
@@ -182,7 +182,7 @@ export const AdvisoryList: React.FC = () => {
     expansion: { isCellExpanded },
   } = tableProps;
 
-  const { downloadAdvisory } = useDownloadAdvisory();
+  const { downloadAdvisory } = useDownload();
 
   return (
     <>

@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import { HubRequestParams } from "@app/api/models";
+import {
+  HubRequestParams,
+  Sbom,
+  SbomCycloneDx,
+  SbomSPDX,
+  SbomType,
+} from "@app/api/models";
 import {
   getSbomById,
   getSbomIndexedById,
@@ -44,8 +50,16 @@ export const useFetchSbomById = (id?: number | string) => {
     enabled: id !== undefined,
   });
 
+  const sbom: Sbom | undefined = data
+    ? "spdxVersion" in data
+      ? { type: SbomType.SPDX, sbom: data as SbomSPDX }
+      : "bomFormat" in data
+        ? { type: SbomType.CycloneDx, sbom: data as SbomCycloneDx }
+        : { type: SbomType.Unknown, sbom: data }
+    : undefined;
+
   return {
-    sbom: data,
+    sbom: sbom,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

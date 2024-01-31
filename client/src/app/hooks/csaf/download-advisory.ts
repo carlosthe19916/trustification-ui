@@ -1,7 +1,7 @@
 import { saveAs } from "file-saver";
 import { downloadAdvisoryById, downloadSbomById } from "@app/api/rest";
 
-export const useDownloadAdvisory = () => {
+export const useDownload = () => {
   const downloadAdvisory = (id: string, filename?: string) => {
     downloadAdvisoryById(id).then((response) => {
       saveAs(new Blob([response.data]), filename || `${id}.json`);

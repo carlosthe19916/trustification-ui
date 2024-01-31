@@ -24,7 +24,7 @@ import {
   RENDER_DATE_FORMAT,
   TablePersistenceKeyPrefixes,
 } from "@app/Constants";
-import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
+import { useDownload } from "@app/hooks/csaf/download-advisory";
 import { useFetchSboms } from "@app/queries/sboms";
 import { useFetchPackages } from "@app/queries/packages";
 
@@ -133,7 +133,7 @@ export const SbomList: React.FC = () => {
     expansion: { isCellExpanded },
   } = tableProps;
 
-  const downloadAdvisory = useDownloadAdvisory();
+  const downloadAdvisory = useDownload();
 
   return (
     <>

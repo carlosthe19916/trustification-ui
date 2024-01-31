@@ -94,7 +94,7 @@ export const getSboms = (params: HubRequestParams = {}) => {
 };
 
 export const getSbomById = (id: number | string) => {
-  return axios.get<Sbom>(`${SBOMs}?id=${id}`).then((response) => response.data);
+  return axios.get<{}>(`${SBOMs}?id=${id}`).then((response) => response.data);
 };
 
 export const downloadSbomById = (id: number | string) => {

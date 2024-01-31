@@ -11,7 +11,6 @@ import {
   DescriptionListTerm,
   Grid,
   GridItem,
-  Label,
   PageSection,
   Stack,
   StackItem,
@@ -20,18 +19,20 @@ import {
 import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
+import { RENDER_DATE_FORMAT } from "@app/Constants";
 import { PathParam, useRouteParams } from "@app/Routes";
-import { useDownloadAdvisory } from "@app/hooks/csaf/download-advisory";
+import { LoadingWrapper } from "@app/components/LoadingWrapper";
+import { useDownload } from "@app/hooks/csaf/download-advisory";
 import {
   useFetchSbomById,
   useFetchSbomIndexedById,
   useFetchSbomVulnerabilitiesById,
 } from "@app/queries/sboms";
-import { LoadingWrapper } from "@app/components/LoadingWrapper";
-import { VulnerabilitiresChart } from "./vulnerabilities-chart";
 import dayjs from "dayjs";
-import { RENDER_DATE_FORMAT } from "@app/Constants";
+import { VulnerabilitiresChart } from "./vulnerabilities-chart";
 import { VulnerabilitiresTable } from "./vulnerabilities-table";
+import { Info } from "./info";
+import { SbomType } from "@app/api/models";
 
 export const SbomDetails: React.FC = () => {
   const sbomId = useRouteParams(PathParam.SBOM_ID);
@@ -55,10 +56,10 @@ export const SbomDetails: React.FC = () => {
   } = useFetchSbomVulnerabilitiesById(sbomId);
 
   const sbomString = useMemo(() => {
-    return JSON.stringify(sbom, null, 2);
+    return JSON.stringify(sbom?.sbom, null, 2);
   }, [sbom]);
 
-  const { downloadSbom } = useDownloadAdvisory();
+  const { downloadSbom } = useDownload();
 
   let vulnerabilities = useMemo(() => {
     return sbomVulnerabilities && sbomVulnerabilities.summary.length === 1
@@ -85,7 +86,12 @@ export const SbomDetails: React.FC = () => {
           pageHeading={{
             title: sbomId ?? "",
             label: {
-              children: "SPDX", // TODO
+              children:
+                sbom?.type === SbomType.SPDX
+                  ? "SPDX"
+                  : sbom?.type === SbomType.CycloneDx
+                    ? "CycloneDX"
+                    : "",
               isCompact: true,
               color: "blue",
             },
@@ -185,12 +191,12 @@ export const SbomDetails: React.FC = () => {
               title: "Info",
               children: (
                 <div className="pf-v5-u-m-md">
-                  {/* <LoadingWrapper
-                    isFetching={isFetching}
-                    fetchError={fetchError}
+                  <LoadingWrapper
+                    isFetching={isFetchingSbom}
+                    fetchError={fetchErrorSbom}
                   >
-                    <NotesMarkdown notes={sbom?.document.notes || []} />
-                  </LoadingWrapper> */}
+                    {sbom && <Info data={sbom} />}
+                  </LoadingWrapper>
                 </div>
               ),
             },
@@ -217,16 +223,21 @@ export const SbomDetails: React.FC = () => {
               title: "Source",
               children: (
                 <div className="pf-v5-u-m-md">
-                  <CodeEditor
-                    isDarkTheme
-                    isLineNumbersVisible
-                    isReadOnly
-                    isMinimapVisible
-                    // isLanguageLabelVisible
-                    code={sbomString}
-                    language={Language.json}
-                    height="685px"
-                  />
+                  <LoadingWrapper
+                    isFetching={isFetchingSbom}
+                    fetchError={fetchErrorSbom}
+                  >
+                    <CodeEditor
+                      isDarkTheme
+                      isLineNumbersVisible
+                      isReadOnly
+                      isMinimapVisible
+                      // isLanguageLabelVisible
+                      code={sbomString}
+                      language={Language.json}
+                      height="685px"
+                    />
+                  </LoadingWrapper>
                 </div>
               ),
             },

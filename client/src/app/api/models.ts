@@ -203,7 +203,52 @@ export interface SbomIndexed {
   advisories?: number;
 }
 
-export interface Sbom {}
+export enum SbomType {
+  SPDX = "spdx",
+  CycloneDx = "CycloneDx",
+  Unknown = "Unknown",
+}
+
+export type Sbom =
+  | {
+      type: SbomType.SPDX;
+      sbom: SbomSPDX;
+    }
+  | {
+      type: SbomType.CycloneDx;
+      sbom: SbomCycloneDx;
+    }
+  | {
+      type: SbomType.Unknown;
+      sbom: SbomUnknown;
+    };
+
+export interface SbomUnknown {}
+
+export interface SbomSPDX {
+  name: string;
+  documentNamespace: string;
+  spdxVersion: string;
+  dataLicense: string;
+  creationInfo: {
+    created: string;
+    licenseListVersion: string;
+    creators: string[];
+  };
+  packages: SPDXPackage[];
+}
+
+export interface SPDXPackage {
+  name: string;
+  version: string;
+  externalRefs?: {
+    referenceCategory: string;
+    referenceLocator: string;
+    referenceType: string;
+  }[];
+}
+
+export interface SbomCycloneDx {}
 
 export interface SbomVulnerabilities {
   version: string;

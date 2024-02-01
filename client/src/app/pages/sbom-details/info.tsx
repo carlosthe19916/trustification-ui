@@ -153,7 +153,7 @@ export const SpxdInfo: React.FC<SpdxInfoProps> = ({ sbom, size }) => {
                   <DescriptionListGroup>
                     <DescriptionListTerm>Version</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {mainPackage.version}
+                      {mainPackage.versionInfo}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                   <DescriptionListGroup>

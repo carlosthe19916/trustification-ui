@@ -240,7 +240,7 @@ export interface SbomSPDX {
 
 export interface SPDXPackage {
   name: string;
-  version: string;
+  versionInfo: string;
   externalRefs?: {
     referenceCategory: string;
     referenceLocator: string;
@@ -265,7 +265,14 @@ export interface SbomCycloneDx {
       }[];
     };
   };
-  components: {}[];
+  components: {
+    purl: string;
+    name: string;
+    version: string;
+    licenses?: {
+      license: { id: string };
+    }[];
+  }[];
 }
 
 export interface SbomVulnerabilities {

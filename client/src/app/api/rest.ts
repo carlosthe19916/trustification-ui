@@ -22,6 +22,8 @@ export const CVEs = HUB + "/api/v1/cve";
 export const SBOMs = HUB + "/api/v1/sbom";
 export const PACKAGES = HUB + "/api/v1/package";
 
+export const DA_REPORT = HUB + "/api/v1/analyze/report";
+
 interface ApiSearchResult<T> {
   total: number;
   result: T[];
@@ -89,6 +91,8 @@ export const downloadCveById = (id: number | string) => {
   });
 };
 
+//
+
 export const getSboms = (params: HubRequestParams = {}) => {
   return getHubPaginatedResult<SbomIndexed>(`${SBOMs}/search`, params);
 };
@@ -124,6 +128,8 @@ export const getSbomVulnerabilitiesById = (id: number | string) => {
     .then((response) => response.data);
 };
 
+//
+
 export const getPackages = (params: HubRequestParams = {}) => {
   return getHubPaginatedResult<PackageIndexed>(`${PACKAGES}/search`, params);
 };
@@ -133,3 +139,8 @@ export const getPackageById = (id: number | string) => {
     .get<Package>(`${PACKAGES}?id=${id}`)
     .then((response) => response.data);
 };
+
+//
+
+export const getDAReport = (obj: string) =>
+  axios.post<string>(`${DA_REPORT}`, obj);

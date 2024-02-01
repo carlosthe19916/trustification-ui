@@ -1,5 +1,3 @@
-import React, { useMemo } from "react";
-import { NavLink } from "react-router-dom";
 import {
   Card,
   CardBody,
@@ -9,21 +7,23 @@ import {
   Label,
   List,
   ListItem,
-  ToolbarContent,
-  TreeView,
-  TreeViewDataItem,
+  ToolbarContent
 } from "@patternfly/react-core";
 import {
   ExpandableRowContent,
-  Tr as PFTr,
   Td as PFTd,
+  Tr as PFTr,
 } from "@patternfly/react-table";
+import React from "react";
+import { NavLink } from "react-router-dom";
 
 import dayjs from "dayjs";
 
 import { Vulnerability } from "@app/api/models";
 import { RENDER_DATE_FORMAT } from "@app/Constants";
 
+import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
+import { ProductStatusTree } from "@app/components/csaf/product-status-tree";
 import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
 import {
   ConditionalTableBody,
@@ -31,8 +31,6 @@ import {
   useClientTableBatteries,
 } from "@mturley-latest/react-table-batteries";
 import { Remediations } from "./remediations";
-import { ProductStatusTree } from "@app/components/csaf/product-status-tree";
-import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
 
 interface VulnerabilitiesProps {
   isFetching: boolean;

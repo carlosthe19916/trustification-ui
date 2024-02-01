@@ -21,6 +21,7 @@ import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
 
 import { RENDER_DATE_FORMAT } from "@app/Constants";
 import { PathParam, useRouteParams } from "@app/Routes";
+import { SbomType } from "@app/api/models";
 import { LoadingWrapper } from "@app/components/LoadingWrapper";
 import { useDownload } from "@app/hooks/csaf/download-advisory";
 import {
@@ -29,10 +30,11 @@ import {
   useFetchSbomVulnerabilitiesById,
 } from "@app/queries/sboms";
 import dayjs from "dayjs";
+import { DAReport } from "./da-report";
+import { Info } from "./info";
+import { Packages } from "./packages";
 import { VulnerabilitiresChart } from "./vulnerabilities-chart";
 import { VulnerabilitiresTable } from "./vulnerabilities-table";
-import { Info } from "./info";
-import { SbomType } from "@app/api/models";
 
 export const SbomDetails: React.FC = () => {
   const sbomId = useRouteParams(PathParam.SBOM_ID);
@@ -205,16 +207,12 @@ export const SbomDetails: React.FC = () => {
               title: "Packages",
               children: (
                 <div className="pf-v5-u-m-md">
-                  {/* <LoadingWrapper
-                    isFetching={isFetching}
-                    fetchError={fetchError}
+                  <LoadingWrapper
+                    isFetching={isFetchingSbom}
+                    fetchError={fetchErrorSbom}
                   >
-                    <Vulnerabilities
-                      isFetching={isFetching}
-                      fetchError={fetchError}
-                      vulnerabilities={sbom?.vulnerabilities || []}
-                    />
-                  </LoadingWrapper> */}
+                    {sbom && <Packages data={sbom} />}
+                  </LoadingWrapper>
                 </div>
               ),
             },
@@ -237,6 +235,20 @@ export const SbomDetails: React.FC = () => {
                       language={Language.json}
                       height="685px"
                     />
+                  </LoadingWrapper>
+                </div>
+              ),
+            },
+            {
+              eventKey: "crda",
+              title: "CRDA",
+              children: (
+                <div className="pf-v5-u-m-md">
+                  <LoadingWrapper
+                    isFetching={isFetchingSbom}
+                    fetchError={fetchErrorSbom}
+                  >
+                    {sbom && <DAReport sbom={sbomString} />}
                   </LoadingWrapper>
                 </div>
               ),

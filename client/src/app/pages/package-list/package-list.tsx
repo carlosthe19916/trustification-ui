@@ -229,7 +229,9 @@ export const PackageList: React.FC = () => {
                   return (
                     <Tr key={item.purl} item={item} rowIndex={rowIndex}>
                       <Td width={25} columnKey="name">
-                        <NavLink to={`/packages/${item.purl}`}>
+                        <NavLink
+                          to={`/packages/${encodeURIComponent(item.purl)}`}
+                        >
                           {item.package?.name}
                         </NavLink>
                       </Td>

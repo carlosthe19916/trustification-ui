@@ -136,7 +136,7 @@ export const getPackages = (params: HubRequestParams = {}) => {
 
 export const getPackageById = (id: number | string) => {
   return axios
-    .get<Package>(`${PACKAGES}?id=${id}`)
+    .get<Package>(`${PACKAGES}/${encodeURIComponent(id.toString())}`)
     .then((response) => response.data);
 };
 

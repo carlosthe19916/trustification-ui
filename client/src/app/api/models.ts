@@ -298,4 +298,6 @@ export interface PackageIndexed {
   purl: string;
 }
 
-export interface Package {}
+export interface Package {
+  purl: string;
+}

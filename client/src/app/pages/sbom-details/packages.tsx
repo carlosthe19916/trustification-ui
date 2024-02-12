@@ -194,7 +194,7 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
                                     ?.map((e) => e.referenceLocator)
                                     .map((e, index) => (
                                       <ListItem key={index}>
-                                        <NavLink to={`/packages/${e}`}>
+                                        <NavLink to={`/packages/${encodeURIComponent(e)}`}>
                                           {e}
                                         </NavLink>
                                       </ListItem>

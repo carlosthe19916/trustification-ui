@@ -19,7 +19,7 @@ import { NavLink } from "react-router-dom";
 import {
   ConditionalTableBody,
   FilterType,
-  useClientTableBatteries
+  useClientTableBatteries,
 } from "@mturley-latest/react-table-batteries";
 import dayjs from "dayjs";
 
@@ -326,7 +326,7 @@ const AffectedDependenciesTable = ({ data }: { data: string[] }) => {
                     {item.package?.namespace}
                   </Td>
                   <Td width={15} columnKey="name">
-                    <NavLink to={`/packages/${item.purl}`}>
+                    <NavLink to={`/packages/${encodeURIComponent(item.purl)}`}>
                       {item.package?.name}
                     </NavLink>
                   </Td>

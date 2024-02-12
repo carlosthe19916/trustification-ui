@@ -38,7 +38,7 @@ export const useFetchPackageById = (id?: number | string) => {
   });
 
   return {
-    advisory: data,
+    pkg: data,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

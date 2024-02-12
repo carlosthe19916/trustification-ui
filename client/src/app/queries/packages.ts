@@ -2,9 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
 import { HubRequestParams } from "@app/api/models";
-import { getPackageById, getPackages } from "@app/api/rest";
+import {
+  getPackageById,
+  getPackageRelatedProducts,
+  getPackages,
+} from "@app/api/rest";
 
 export const PackagesQueryKey = "packages";
+export const PackagesRelatedProductQueryKey = "packages-related-products";
 
 export const useFetchPackages = (params: HubRequestParams = {}) => {
   const {
@@ -39,6 +44,23 @@ export const useFetchPackageById = (id?: number | string) => {
 
   return {
     pkg: data,
+    isFetching: isLoading,
+    fetchError: error as AxiosError,
+  };
+};
+
+export const useFetchPackageRelatedProducts = (id?: number | string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: [PackagesRelatedProductQueryKey, id],
+    queryFn: () =>
+      id === undefined
+        ? Promise.resolve(undefined)
+        : getPackageRelatedProducts(id),
+    enabled: id !== undefined,
+  });
+
+  return {
+    relatedProducts: data,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

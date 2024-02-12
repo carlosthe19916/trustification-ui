@@ -1,19 +1,18 @@
-import axios, { AxiosRequestConfig } from "axios";
+import { serializeRequestParamsForHub } from "@app/hooks/table-controls";
+import axios from "axios";
 import {
+  Advisory,
+  AdvisoryIndexed,
+  Cve,
+  CveIndexed,
   HubPaginatedResult,
   HubRequestParams,
-  New,
-  AdvisoryIndexed,
-  Advisory,
-  CveIndexed,
-  Cve,
-  SbomIndexed,
-  Sbom,
-  PackageIndexed,
   Package,
-  SbomVulnerabilities,
+  PackageIndexed,
+  PackageRelatedProducts,
+  SbomIndexed,
+  SbomVulnerabilities
 } from "./models";
-import { serializeRequestParamsForHub } from "@app/hooks/table-controls";
 
 const HUB = "/hub";
 
@@ -84,6 +83,20 @@ export const getCveById = (id: number | string) => {
   return axios.get<Cve>(`${CVEs}?id=${id}`).then((response) => response.data);
 };
 
+export const getCveIndexedById = (id: number | string) => {
+  return getHubPaginatedResult<CveIndexed>(`${CVEs}`, {
+    filters: [
+      {
+        field: "id",
+        value: id,
+        operator: "=",
+      },
+    ],
+  }).then((response) =>
+    response.data.length === 1 ? response.data[0] : undefined
+  );
+};
+
 export const downloadCveById = (id: number | string) => {
   return axios.get(`${CVEs}?id=${id}`, {
     responseType: "arraybuffer",
@@ -122,6 +135,20 @@ export const getSbomIndexedById = (id: number | string) => {
   );
 };
 
+export const getSbomIndexedByUId = (id: number | string) => {
+  return getHubPaginatedResult<SbomIndexed>(`${SBOMs}/search`, {
+    filters: [
+      {
+        field: "uid",
+        value: id,
+        operator: "=",
+      },
+    ],
+  }).then((response) =>
+    response.data.length === 1 ? response.data[0] : undefined
+  );
+};
+
 export const getSbomVulnerabilitiesById = (id: number | string) => {
   return axios
     .get<SbomVulnerabilities>(`${SBOMs}/vulnerabilities?id=${id}`)
@@ -137,6 +164,14 @@ export const getPackages = (params: HubRequestParams = {}) => {
 export const getPackageById = (id: number | string) => {
   return axios
     .get<Package>(`${PACKAGES}/${encodeURIComponent(id.toString())}`)
+    .then((response) => response.data);
+};
+
+export const getPackageRelatedProducts = (id: number | string) => {
+  return axios
+    .get<PackageRelatedProducts>(
+      `${PACKAGES}/${encodeURIComponent(id.toString())}/related-products`
+    )
     .then((response) => response.data);
 };
 

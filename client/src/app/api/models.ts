@@ -300,4 +300,14 @@ export interface PackageIndexed {
 
 export interface Package {
   purl: string;
+  vulnerabilities?: {
+    cve: string;
+    severity: string;
+  }[];
+}
+
+export interface PackageRelatedProducts {
+  related_products: {
+    sbom_uid: string;
+  }[];
 }

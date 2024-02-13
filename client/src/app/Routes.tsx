@@ -7,6 +7,7 @@ const Home = lazy(() => import("./pages/home"));
 const AdvisoryList = lazy(() => import("./pages/advisory-list"));
 const AdvisoryDetails = lazy(() => import("./pages/advisory-details"));
 const CveList = lazy(() => import("./pages/cve-list"));
+const CveDetails = lazy(() => import("./pages/cve-details"));
 const SbomList = lazy(() => import("./pages/sbom-list"));
 const SbomDetails = lazy(() => import("./pages/sbom-details"));
 const PackageList = lazy(() => import("./pages/package-list"));
@@ -23,9 +24,12 @@ export const AppRoutes = () => {
   const allRoutes = useRoutes([
     { path: "/", element: <Home /> },
     { path: "/advisories", element: <AdvisoryList /> },
-    { path: `/advisories/:${PathParam.ADVISORY_ID}`, element: <AdvisoryDetails /> },
+    {
+      path: `/advisories/:${PathParam.ADVISORY_ID}`,
+      element: <AdvisoryDetails />,
+    },
     { path: "/cves", element: <CveList /> },
-    // { path: `/cves/:${PathParam.CVE_ID}`, element: <Cves /> },
+    { path: `/cves/:${PathParam.CVE_ID}`, element: <CveDetails /> },
     { path: "/sboms", element: <SbomList /> },
     { path: `/sboms/:${PathParam.SBOM_ID}`, element: <SbomDetails /> },
     { path: "/packages", element: <PackageList /> },

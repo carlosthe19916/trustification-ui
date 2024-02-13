@@ -191,7 +191,25 @@ export interface CveIndexed {
   };
 }
 
-export interface Cve {}
+export interface Cve {
+  containers: {
+    cna: {
+      metrics?: {
+        cvssV3_1: {
+          baseScore: number;
+          baseSeverity: string;
+        };
+      }[];
+      title: string;
+      descriptions: { value: string }[];
+    };
+  };
+  cveMetadata: {
+    dateReserved: string;
+    datePublished: string;
+    dateUpdated: string;
+  };
+}
 
 export interface SbomIndexed {
   id: string;

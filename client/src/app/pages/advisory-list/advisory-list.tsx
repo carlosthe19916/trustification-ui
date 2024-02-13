@@ -32,10 +32,10 @@ import { formatRustDate } from "@app/utils/utils";
 
 import { RHSeverityShield } from "@app/components/csaf/rh-severity";
 
+import { TablePersistenceKeyPrefixes } from "@app/Constants";
 import { useDownload } from "@app/hooks/csaf/download-advisory";
 import { AdvisoryDetails } from "./advisory-details";
 import { VulnerabilitiesCount } from "./vulnerabilities";
-import { TablePersistenceKeyPrefixes } from "@app/Constants";
 
 const DATE_FORMAT = "YYYY-MM-DD";
 

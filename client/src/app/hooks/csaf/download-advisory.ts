@@ -1,5 +1,9 @@
 import { saveAs } from "file-saver";
-import { downloadAdvisoryById, downloadSbomById } from "@app/api/rest";
+import {
+  downloadAdvisoryById,
+  downloadCveById,
+  downloadSbomById,
+} from "@app/api/rest";
 
 export const useDownload = () => {
   const downloadAdvisory = (id: string, filename?: string) => {
@@ -14,5 +18,11 @@ export const useDownload = () => {
     });
   };
 
-  return { downloadAdvisory, downloadSbom };
+  const downloadCve = (id: string, filename?: string) => {
+    downloadCveById(id).then((response) => {
+      saveAs(new Blob([response.data]), filename || `${id}.json`);
+    });
+  };
+
+  return { downloadAdvisory, downloadSbom, downloadCve };
 };

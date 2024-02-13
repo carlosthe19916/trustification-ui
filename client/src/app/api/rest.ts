@@ -80,7 +80,7 @@ export const getCves = (params: HubRequestParams = {}) => {
 };
 
 export const getCveById = (id: number | string) => {
-  return axios.get<Cve>(`${CVEs}?id=${id}`).then((response) => response.data);
+  return axios.get<Cve>(`${CVEs}/${id}`).then((response) => response.data);
 };
 
 export const getCveIndexedById = (id: number | string) => {
@@ -98,7 +98,7 @@ export const getCveIndexedById = (id: number | string) => {
 };
 
 export const downloadCveById = (id: number | string) => {
-  return axios.get(`${CVEs}?id=${id}`, {
+  return axios.get(`${CVEs}/${id}`, {
     responseType: "arraybuffer",
     headers: { Accept: "text/plain", responseType: "blob" },
   });

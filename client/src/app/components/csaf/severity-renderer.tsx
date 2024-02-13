@@ -1,9 +1,6 @@
 import React from "react";
 
-import {
-  Label,
-  Progress
-} from "@patternfly/react-core";
+import { Label, Progress } from "@patternfly/react-core";
 
 import { baseSeverityList, severityFromNumber } from "@app/api/model-utils";
 import { BaseSeverity } from "@app/api/models";
@@ -20,10 +17,13 @@ export const SeverityRenderer: React.FC<SeverityRendererProps> = ({
   severity,
 }) => {
   let severityType = severity || severityFromNumber(score);
-
+  let severityProps = baseSeverityList[severityType];
   if (variant == "label") {
     return (
-      <Label {...baseSeverityList[severityType].labelProps}>{score}</Label>
+      <Label
+        isCompact
+        {...severityProps.labelProps}
+      >{`${score} ${severityProps.name}`}</Label>
     );
   } else {
     return (
@@ -33,7 +33,7 @@ export const SeverityRenderer: React.FC<SeverityRendererProps> = ({
         max={10}
         value={score}
         label={`${score}/10`}
-        {...baseSeverityList[severityType].progressProps}
+        {...severityProps.progressProps}
       />
     );
   }

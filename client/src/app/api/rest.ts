@@ -11,7 +11,7 @@ import {
   PackageIndexed,
   PackageRelatedProducts,
   SbomIndexed,
-  SbomVulnerabilities
+  SbomVulnerabilities,
 } from "./models";
 
 const HUB = "/hub";

@@ -54,7 +54,7 @@ export const useFetchAdvisoryByCveId = (cveId?: number | string) => {
   });
 
   return {
-    advisory: data,
+    advisories: data,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

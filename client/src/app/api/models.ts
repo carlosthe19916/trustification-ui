@@ -329,3 +329,26 @@ export interface PackageRelatedProducts {
     sbom_uid: string;
   }[];
 }
+
+export enum ProductCveStatus {
+  Fixed = "Fixed",
+  FirstFixed = "FirstFixed",
+  FirstAffected = "FirstAffected",
+  KnownAffected = "KnownAffected",
+  LastAffected = "LastAffected",
+  KnownNotAffected = "KnownNotAffected",
+  Recommended = "Recommended",
+  UnderInvestigation = "UnderInvestigation",
+}
+
+export interface CveRelatedProducts {
+  products: {
+    [key in ProductCveStatus]: {
+      // Key: SBOM UID
+      [key: string]: {
+        purl: string;
+        type: string;
+      }[];
+    };
+  };
+}

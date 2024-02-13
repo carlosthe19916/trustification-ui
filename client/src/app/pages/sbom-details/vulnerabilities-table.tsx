@@ -4,6 +4,8 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   Label,
+  List,
+  ListItem,
   ToolbarContent,
 } from "@patternfly/react-core";
 import {
@@ -360,22 +362,28 @@ const CVEDetails = ({
   id: string;
   description: string;
 }) => {
-  const { advisory } = useFetchAdvisoryByCveId(id);
+  const { advisories } = useFetchAdvisoryByCveId(id);
 
   return (
     <DescriptionList isCompact>
-      {advisory && (
-        <DescriptionListGroup>
-          <DescriptionListTerm>Relevant advisories</DescriptionListTerm>
-          <DescriptionListDescription>
-            <NavLink to={`/advisories/${advisory.id}`}>{advisory.id}</NavLink>
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-      )}
       <DescriptionListGroup>
         <DescriptionListTerm>Description</DescriptionListTerm>
         <DescriptionListDescription>{description}</DescriptionListDescription>
       </DescriptionListGroup>
+      {advisories && (
+        <DescriptionListGroup>
+          <DescriptionListTerm>Relevant advisories</DescriptionListTerm>
+          <DescriptionListDescription>
+            <List>
+              {advisories.map((e, index) => (
+                <ListItem key={index}>
+                  <NavLink to={`/advisories/${e.id}`}>{e.id}</NavLink>
+                </ListItem>
+              ))}
+            </List>
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+      )}
     </DescriptionList>
   );
 };

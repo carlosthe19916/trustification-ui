@@ -2,11 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
 import { HubRequestParams } from "@app/api/models";
-import { getCveById, getCveIndexedById, getCves } from "@app/api/rest";
+import {
+  getCveById,
+  getCveIndexedById,
+  getCveRelatedProducts,
+  getCves,
+} from "@app/api/rest";
 import { useWithUiId } from "@app/utils/query-utils";
 
 export const CvesQueryKey = "cves";
 export const CvesIndexedQueryKey = "cves-indexed";
+export const CvesRelatedProductsQueryKey = "cves-related-products";
 
 export const useFetchCves = (params: HubRequestParams = {}) => {
   const {
@@ -58,6 +64,21 @@ export const useFetchCveIndexedById = (id?: number | string) => {
 
   return {
     cve: data,
+    isFetching: isLoading,
+    fetchError: error as AxiosError,
+  };
+};
+
+export const useFetchCveRelatedProducts = (id?: number | string) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: [CvesRelatedProductsQueryKey, id],
+    queryFn: () =>
+      id === undefined ? Promise.resolve(undefined) : getCveRelatedProducts(id),
+    enabled: id !== undefined,
+  });
+
+  return {
+    relatedProducts: data,
     isFetching: isLoading,
     fetchError: error as AxiosError,
   };

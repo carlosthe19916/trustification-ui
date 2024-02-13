@@ -5,6 +5,7 @@ import {
   AdvisoryIndexed,
   Cve,
   CveIndexed,
+  CveRelatedProducts,
   HubPaginatedResult,
   HubRequestParams,
   Package,
@@ -60,7 +61,7 @@ export const downloadAdvisoryById = (id: number | string) => {
 };
 
 export const getAdvisoryByCveId = (cveId: number | string) => {
-  return getHubPaginatedResult<SbomIndexed>(`${ADVISORIES}/search`, {
+  return getHubPaginatedResult<AdvisoryIndexed>(`${ADVISORIES}/search`, {
     filters: [
       {
         field: "cve",
@@ -68,9 +69,7 @@ export const getAdvisoryByCveId = (cveId: number | string) => {
         operator: "=",
       },
     ],
-  }).then((response) =>
-    response.data.length === 1 ? response.data[0] : undefined
-  );
+  }).then((response) => response.data);
 };
 
 //
@@ -102,6 +101,12 @@ export const downloadCveById = (id: number | string) => {
     responseType: "arraybuffer",
     headers: { Accept: "text/plain", responseType: "blob" },
   });
+};
+
+export const getCveRelatedProducts = (id: number | string) => {
+  return axios
+    .get<CveRelatedProducts>(`${CVEs}/${id}/related-products`)
+    .then((response) => response.data);
 };
 
 //

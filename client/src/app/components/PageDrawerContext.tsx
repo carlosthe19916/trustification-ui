@@ -65,7 +65,7 @@ export const PageContentWithDrawerProvider: React.FC<
   } = pageDrawerState;
   return (
     <PageDrawerContext.Provider value={pageDrawerState}>
-      <div className={pageStyles.pageDrawer}>
+      <div className={pageStyles.pageDrawer} style={{ height: "100%", backgroundColor: "transparent" }}>
         <Drawer
           isExpanded={isDrawerExpanded}
           onExpand={() => drawerFocusRef?.current?.focus()}

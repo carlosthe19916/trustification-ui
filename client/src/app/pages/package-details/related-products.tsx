@@ -120,7 +120,7 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
                           <>
                             <Td width={45} columnKey="name">
                               <NavLink to={`/sboms/${sbom?.id}`}>
-                                {sbom?.id}
+                                {sbom?.name}
                               </NavLink>
                             </Td>
                             <Td

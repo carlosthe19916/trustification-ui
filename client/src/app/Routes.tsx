@@ -4,6 +4,7 @@ import { useParams, useRoutes } from "react-router-dom";
 import { Bullseye, Spinner } from "@patternfly/react-core";
 
 const Home = lazy(() => import("./pages/home"));
+const Search = lazy(() => import("./pages/search"));
 const AdvisoryList = lazy(() => import("./pages/advisory-list"));
 const AdvisoryDetails = lazy(() => import("./pages/advisory-details"));
 const CveList = lazy(() => import("./pages/cve-list"));
@@ -23,6 +24,8 @@ export enum PathParam {
 export const AppRoutes = () => {
   const allRoutes = useRoutes([
     { path: "/", element: <Home /> },
+    { path: "/search", element: <Search /> },
+
     { path: "/advisories", element: <AdvisoryList /> },
     {
       path: `/advisories/:${PathParam.ADVISORY_ID}`,

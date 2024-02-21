@@ -1,7 +1,7 @@
 /* eslint-env node */
 
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import express from "express";
 import ejs from "ejs";
@@ -14,6 +14,7 @@ import {
   TRUSTIFICATION_ENV,
   SERVER_ENV_KEYS,
   proxyMap,
+  brandingStrings,
 } from "@trustification-ui/common";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -48,7 +49,7 @@ app.get("*", (_, res) => {
   } else {
     res.render("index.html.ejs", {
       _env: encodeEnv(TRUSTIFICATION_ENV, SERVER_ENV_KEYS),
-      brandType,
+      branding: brandingStrings,
     });
   }
 });

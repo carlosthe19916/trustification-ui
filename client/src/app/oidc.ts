@@ -8,4 +8,5 @@ export const oidcClientSettings: OidcClientSettings = {
   post_logout_redirect_uri: window.location.href.split("?")[0],
   response_type: "code",
   loadUserInfo: true,
+  scope: ENV.OIDC_SCOPE || "openid",
 };

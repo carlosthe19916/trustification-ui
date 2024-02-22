@@ -22,6 +22,9 @@ export type TrustificationEnvType = {
   /** SSO / Oidc client id */
   OIDC_CLIENT_ID: string;
 
+  /** SSO / Oidc scope */
+  OIDC_SCOPE?: string;
+
   /** UI upload file size limit in megabytes (MB), suffixed with "m" */
   UI_INGRESS_PROXY_BODY_SIZE: string;
 
@@ -36,6 +39,12 @@ export type TrustificationEnvType = {
 
   /** Location of branding files (relative paths computed from the project source root) */
   BRANDING?: string;
+
+  /** Enable Analytics */
+  ANALYTICS_ENABLED: "true" | "false";
+
+  /** Segment Write key */
+  ANALYTICS_WRITE_KEY?: string;
 };
 
 /**
@@ -56,10 +65,14 @@ export const buildTrustificationEnv = ({
   OIDC_SERVER_URL,
   AUTH_REQUIRED = "false",
   OIDC_CLIENT_ID = "frontend",
+  OIDC_SCOPE,
 
   UI_INGRESS_PROXY_BODY_SIZE = "500m",
   TRUSTIFICATION_HUB_URL,
   BRANDING,
+
+  ANALYTICS_ENABLED = "false",
+  ANALYTICS_WRITE_KEY,
 }: Partial<TrustificationEnvType> = {}): TrustificationEnvType => ({
   NODE_ENV,
   PORT,
@@ -69,10 +82,14 @@ export const buildTrustificationEnv = ({
   OIDC_SERVER_URL,
   AUTH_REQUIRED,
   OIDC_CLIENT_ID,
+  OIDC_SCOPE,
 
   UI_INGRESS_PROXY_BODY_SIZE,
   TRUSTIFICATION_HUB_URL,
   BRANDING,
+
+  ANALYTICS_ENABLED,
+  ANALYTICS_WRITE_KEY,
 });
 
 /**

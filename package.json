@@ -49,6 +49,7 @@
     "@rollup/plugin-run": "^3.0.2",
     "@rollup/plugin-typescript": "^11.1.6",
     "@rollup/plugin-virtual": "^3.0.2",
+    "@rollup/wasm-node": "^4.12.0",
     "@tanstack/eslint-plugin-query": "^4.34.1",
     "@types/jest": "^29.5.4",
     "@types/node": "^18.14.2",

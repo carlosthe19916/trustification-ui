@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   image-build:
-    uses: ./.github/workflows/build-push-images.yaml@main
+    uses: ./.github/workflows/build-push-images.yaml
     with:
       registry: "quay.io/carlosthe19916"
       image_name: "trustification-ui"

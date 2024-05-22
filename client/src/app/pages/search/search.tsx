@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import {
   Badge,
@@ -23,13 +24,11 @@ import {
 } from "@patternfly/react-core";
 import { useDebounceValue } from "usehooks-ts";
 
-import { FilterType } from "@carlosthe19916-latest/react-table-batteries";
-
 import { useAdvisoryList } from "../advisory-list/useAdvisoryList";
 import { useCveList } from "../cve-list/useCveList";
 import { usePackageList } from "../package-list/usePackageList";
 import { useSbomList } from "../sbom-list/useSbomList";
-import { useSearchParams } from "react-router-dom";
+import { FilterType } from "@app/components/FilterToolbar";
 
 enum TabIndex {
   CVEs,
@@ -50,106 +49,102 @@ export const Search: React.FC = () => {
   );
 
   // CVEs
-  const {
-    tableProps: tablePropsCves,
-    total: totalCves,
-    table: tableCves,
-  } = useCveList();
+  const { components } = useCveList();
 
-  const {
-    components: {
-      Toolbar: ToolbarCves,
-      PaginationToolbarItem: PaginationToolbarItemCves,
-      Pagination: PaginationCves,
-    },
-    filter: filterCves,
-  } = tablePropsCves;
+  // const {
+  //   components: {
+  //     Toolbar: ToolbarCves,
+  //     PaginationToolbarItem: PaginationToolbarItemCves,
+  //     Pagination: PaginationCves,
+  //   },
+  //   filter: filterCves,
+  // } = tablePropsCves;
 
   // Packages
-  const {
-    tableProps: tablePropsPackages,
-    total: totalPackages,
-    table: tablePackages,
-  } = usePackageList();
+  // const {
+  //   tableProps: tablePropsPackages,
+  //   total: totalPackages,
+  //   table: tablePackages,
+  // } = usePackageList();
 
-  const {
-    components: {
-      Toolbar: ToolbarPackages,
-      PaginationToolbarItem: PaginationToolbarItemPackages,
-      Pagination: PaginationPackages,
-    },
-    filter: filterPackages,
-  } = tablePropsPackages;
+  // const {
+  //   components: {
+  //     Toolbar: ToolbarPackages,
+  //     PaginationToolbarItem: PaginationToolbarItemPackages,
+  //     Pagination: PaginationPackages,
+  //   },
+  //   filter: filterPackages,
+  // } = tablePropsPackages;
 
   // SBOMs
-  const {
-    tableProps: tablePropsSboms,
-    total: totalSboms,
-    table: tableSboms,
-  } = useSbomList();
+  // const {
+  //   tableProps: tablePropsSboms,
+  //   total: totalSboms,
+  //   table: tableSboms,
+  // } = useSbomList();
 
-  const {
-    components: {
-      Toolbar: ToolbarSboms,
-      PaginationToolbarItem: PaginationToolbarItemSboms,
-      Pagination: PaginationSboms,
-    },
-    filter: filterSboms,
-  } = tablePropsSboms;
+  // const {
+  //   components: {
+  //     Toolbar: ToolbarSboms,
+  //     PaginationToolbarItem: PaginationToolbarItemSboms,
+  //     Pagination: PaginationSboms,
+  //   },
+  //   filter: filterSboms,
+  // } = tablePropsSboms;
 
   // Advisories
-  const {
-    tableProps: tablePropsAdvisories,
-    total: totalAdvisories,
-    table: tableAdvisories,
-  } = useAdvisoryList();
+  // const {
+  //   tableProps: tablePropsAdvisories,
+  //   total: totalAdvisories,
+  //   table: tableAdvisories,
+  // } = useAdvisoryList();
 
-  const {
-    components: {
-      Toolbar: ToolbarAdvisories,
-      PaginationToolbarItem: PaginationToolbarItemAdvisories,
-      Pagination: PaginationAdvisories,
-    },
-    filter: filterAdvisories,
-  } = tablePropsAdvisories;
+  // const {
+  //   components: {
+  //     Toolbar: ToolbarAdvisories,
+  //     PaginationToolbarItem: PaginationToolbarItemAdvisories,
+  //     Pagination: PaginationAdvisories,
+  //   },
+  //   filter: filterAdvisories,
+  // } = tablePropsAdvisories;
 
   // Filters
-  let filter: any = null;
-  switch (activeTabKey) {
-    case TabIndex.CVEs:
-      filter = filterCves;
-      break;
-    case TabIndex.Packages:
-      filter = filterPackages;
-      break;
-    case TabIndex.SBOMs:
-      filter = filterSboms;
-      break;
-    case TabIndex.Advisories:
-      filter = filterAdvisories;
-      break;
-    default:
-      break;
-  }
+  // let filter: any = null;
+  // switch (activeTabKey) {
+  //   case TabIndex.CVEs:
+  //     filter = filterCves;
+  //     break;
+  //   case TabIndex.Packages:
+  //     filter = filterPackages;
+  //     break;
+  //   case TabIndex.SBOMs:
+  //     filter = filterSboms;
+  //     break;
+  //   case TabIndex.Advisories:
+  //     filter = filterAdvisories;
+  //     break;
+  //   default:
+  //     break;
+  // }
 
-  useEffect(() => {
-    filterCves.setFilterValues({
-      ...filter.filterValues,
-      filterText: [filterText],
-    });
-    filterPackages.setFilterValues({
-      ...filter.filterValues,
-      filterText: [filterText],
-    });
-    filterSboms.setFilterValues({
-      ...filter.filterValues,
-      filterText: [filterText],
-    });
-    filterAdvisories.setFilterValues({
-      ...filter.filterValues,
-      filterText: [filterText],
-    });
-  }, [filterText]);
+  // useEffect(() => {
+  //   filterCves.setFilterValues({
+  //     ...filter.filterValues,
+  //     filterText: [filterText],
+  //   });
+  //   filterPackages.setFilterValues({
+  //     ...filter.filterValues,
+  //     filterText: [filterText],
+  //   });
+  //   filterSboms.setFilterValues({
+  //     ...filter.filterValues,
+  //     filterText: [filterText],
+  //   });
+  //   filterAdvisories.setFilterValues({
+  //     ...filter.filterValues,
+  //     filterText: [filterText],
+  //   });
+  // }, [filterText]);
 
   return (
     <>
@@ -176,7 +171,7 @@ export const Search: React.FC = () => {
           <GridItem md={3}>
             <Card>
               <CardBody style={{ padding: 0 }}>
-                {filter &&
+                {/* {filter &&
                   filter.filterCategories.map((e: any, index: number) => {
                     if (e.type === FilterType.select) {
                       const selectOptions = (e as any).selectOptions as {
@@ -271,7 +266,7 @@ export const Search: React.FC = () => {
                       );
                     }
                     return null;
-                  })}
+                  })} */}
               </CardBody>
             </Card>
           </GridItem>
@@ -299,13 +294,13 @@ export const Search: React.FC = () => {
                         isRead
                         onClick={() => setActiveTabKey(TabIndex.CVEs)}
                       >
-                        {totalCves}
+                        {/* {totalCves} */}
                       </Badge>
                     </TabAction>
                   </>
                 }
               >
-                <ToolbarCves>
+                {/* <ToolbarCves>
                   <ToolbarContent>
                     <PaginationToolbarItemCves>
                       <PaginationCves
@@ -316,7 +311,7 @@ export const Search: React.FC = () => {
                     </PaginationToolbarItemCves>
                   </ToolbarContent>
                 </ToolbarCves>
-                {tableCves}
+                {tableCves} */}
               </Tab>
               <Tab
                 eventKey={TabIndex.Packages}
@@ -328,13 +323,13 @@ export const Search: React.FC = () => {
                         isRead
                         onClick={() => setActiveTabKey(TabIndex.Packages)}
                       >
-                        {totalPackages}
+                        {/* {totalPackages} */}
                       </Badge>
                     </TabAction>
                   </>
                 }
               >
-                <ToolbarPackages>
+                {/* <ToolbarPackages>
                   <ToolbarContent>
                     <PaginationToolbarItemPackages>
                       <PaginationPackages
@@ -345,7 +340,7 @@ export const Search: React.FC = () => {
                     </PaginationToolbarItemPackages>
                   </ToolbarContent>
                 </ToolbarPackages>
-                {tablePackages}
+                {tablePackages} */}
               </Tab>
               <Tab
                 eventKey={TabIndex.SBOMs}
@@ -357,13 +352,13 @@ export const Search: React.FC = () => {
                         isRead
                         onClick={() => setActiveTabKey(TabIndex.SBOMs)}
                       >
-                        {totalSboms}
+                        {/* {totalSboms} */}
                       </Badge>
                     </TabAction>
                   </>
                 }
               >
-                <ToolbarSboms>
+                {/* <ToolbarSboms>
                   <ToolbarContent>
                     <PaginationToolbarItemSboms>
                       <PaginationSboms
@@ -374,7 +369,7 @@ export const Search: React.FC = () => {
                     </PaginationToolbarItemSboms>
                   </ToolbarContent>
                 </ToolbarSboms>
-                {tableSboms}
+                {tableSboms} */}
               </Tab>
               <Tab
                 eventKey={TabIndex.Advisories}
@@ -386,13 +381,13 @@ export const Search: React.FC = () => {
                         isRead
                         onClick={() => setActiveTabKey(TabIndex.Advisories)}
                       >
-                        {totalAdvisories}
+                        {/* {totalAdvisories} */}
                       </Badge>
                     </TabAction>
                   </>
                 }
               >
-                <ToolbarAdvisories>
+                {/* <ToolbarAdvisories>
                   <ToolbarContent>
                     <PaginationToolbarItemAdvisories>
                       <PaginationAdvisories
@@ -403,7 +398,7 @@ export const Search: React.FC = () => {
                     </PaginationToolbarItemAdvisories>
                   </ToolbarContent>
                 </ToolbarAdvisories>
-                {tableAdvisories}
+                {tableAdvisories} */}
               </Tab>
             </Tabs>
           </GridItem>

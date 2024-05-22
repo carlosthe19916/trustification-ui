@@ -1,3 +1,9 @@
+import React from "react";
+import { NavLink } from "react-router-dom";
+
+import dayjs from "dayjs";
+import { PackageURL } from "packageurl-js";
+
 import {
   DescriptionList,
   DescriptionListDescription,
@@ -6,30 +12,34 @@ import {
   Label,
   List,
   ListItem,
+  Toolbar,
   ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
 import {
   ExpandableRowContent,
   IExtraData,
   IRowData,
-  Td as PFTd,
-  Tr as PFTr,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from "@patternfly/react-table";
-import React from "react";
-import { NavLink } from "react-router-dom";
-
-import {
-  ConditionalTableBody,
-  FilterType,
-  useClientTableBatteries,
-} from "@carlosthe19916-latest/react-table-batteries";
-import dayjs from "dayjs";
 
 import { RENDER_DATE_FORMAT } from "@app/Constants";
 import { SbomVulnerabilities } from "@app/api/models";
+import { FilterToolbar, FilterType } from "@app/components/FilterToolbar";
+import { SimplePagination } from "@app/components/SimplePagination";
+import {
+  ConditionalTableBody,
+  TableHeaderContentWithControls,
+  TableRowContentWithControls,
+} from "@app/components/TableControls";
 import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
+import { useLocalTableControls } from "@app/hooks/table-controls";
 import { useFetchAdvisoryByCveId } from "@app/queries/advisories";
-import { PackageURL } from "packageurl-js";
 
 interface VulnerabilitiresTableProps {
   isFetching: boolean;
@@ -42,7 +52,8 @@ export const VulnerabilitiresTable: React.FC<VulnerabilitiresTableProps> = ({
   fetchError,
   sbomVulnerabilitires,
 }) => {
-  const tableControls = useClientTableBatteries({
+  const tableControls = useLocalTableControls({
+    tableName: "vulnerability-table",
     persistTo: "sessionStorage",
     idProperty: "id",
     items: sbomVulnerabilitires?.details || [],
@@ -56,81 +67,75 @@ export const VulnerabilitiresTable: React.FC<VulnerabilitiresTableProps> = ({
       updated: "Updated",
     },
     hasActionsColumn: true,
-    filter: {
-      isEnabled: true,
-      filterCategories: [
-        {
-          key: "filterText",
-          title: "Filter text",
-          type: FilterType.search,
-          placeholderText: "Search...",
-          getItemValue: (item) => `${item.id} ${item.description}`,
-        },
-      ],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: ["id", "affectedDependencies", "published", "updated"],
-      getSortValues: (item) => ({
-        id: item?.id || "",
-        affectedDependencies: Object.keys(item.affected_packages || {}).length,
-        published: item ? dayjs(item.published as any).millisecond() : 0,
-        updated: item ? dayjs(item.updated as any).millisecond() : 0,
-      }),
-    },
-    pagination: { isEnabled: true },
-    expansion: {
-      isEnabled: true,
-      variant: "compound",
-      persistTo: "state",
-    },
+    isFilterEnabled: true,
+    filterCategories: [
+      {
+        categoryKey: "filterText",
+        title: "Filter text",
+        type: FilterType.search,
+        placeholderText: "Search...",
+        getItemValue: (item) => `${item.id} ${item.description}`,
+      },
+    ],
+    isSortEnabled: true,
+    sortableColumns: ["id", "affectedDependencies", "published", "updated"],
+    getSortValues: (item) => ({
+      id: item?.id || "",
+      affectedDependencies: Object.keys(item.affected_packages || {}).length,
+      published: item ? dayjs(item.published as any).millisecond() : 0,
+      updated: item ? dayjs(item.updated as any).millisecond() : 0,
+    }),
+    isPaginationEnabled: true,
+    isExpansionEnabled: true,
+    expandableVariant: "compound",
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    propHelpers: {
+      toolbarProps,
+      filterToolbarProps,
+      paginationToolbarItemProps,
+      paginationProps,
+      tableProps,
+      getThProps,
+      getTrProps,
+      getTdProps,
     },
-    expansion: { isCellExpanded, setCellExpanded },
+    expansionDerivedState: { isCellExpanded, setCellExpanded },
   } = tableControls;
 
   return (
     <>
-      <Toolbar>
+      <Toolbar {...toolbarProps}>
         <ToolbarContent>
-          <FilterToolbar id="vulnerabilities-toolbar" />
-          <PaginationToolbarItem>
-            <Pagination
-              variant="top"
-              isCompact
-              widgetId="vulnerabilities-pagination-top"
+          <FilterToolbar showFiltersSideBySide {...filterToolbarProps} />
+          <ToolbarItem {...paginationToolbarItemProps}>
+            <SimplePagination
+              idPrefix="vulnerability-table"
+              isTop
+              paginationProps={paginationProps}
             />
-          </PaginationToolbarItem>
+          </ToolbarItem>
         </ToolbarContent>
       </Toolbar>
 
       <Table
-        aria-label="Vulnerabilities table"
+        {...tableProps}
+        aria-label="Vulnerability table"
         className="vertical-aligned-table"
       >
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="id" />
-            <Th columnKey="description" />
-            <Th columnKey="cvss" />
-            <Th columnKey="affectedDependencies" />
-            <Th columnKey="published" />
-            <Th columnKey="updated" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "id" })} />
+              <Th {...getThProps({ columnKey: "description" })} />
+              <Th {...getThProps({ columnKey: "cvss" })} />
+              <Th {...getThProps({ columnKey: "affectedDependencies" })} />
+              <Th {...getThProps({ columnKey: "published" })} />
+              <Th {...getThProps({ columnKey: "updated" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
@@ -142,74 +147,87 @@ export const VulnerabilitiresTable: React.FC<VulnerabilitiresTableProps> = ({
           {currentPageItems?.map((item, rowIndex) => {
             return (
               <Tbody key={item.id} isExpanded={isCellExpanded(item)}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <Td
-                    width={15}
-                    columnKey="id"
-                    compoundExpand={{
-                      isExpanded: isCellExpanded(item, "id"),
-                      onToggle: (
-                        event: React.MouseEvent,
-                        rowIndex: number,
-                        colIndex: number,
-                        isOpen: boolean,
-                        rowData: IRowData,
-                        extraData: IExtraData
-                      ) => {
-                        setCellExpanded({
-                          item,
-                          isExpanding: !isOpen,
-                          columnKey: "id",
-                        });
-                      },
-                    }}
+                <Tr {...getTrProps({ item })}>
+                  <TableRowContentWithControls
+                    {...tableControls}
+                    item={item}
+                    rowIndex={rowIndex}
                   >
-                    <NavLink to={`/cves/${item.id}`}>{item.id}</NavLink>
-                  </Td>
-                  <Td width={40} modifier="truncate" columnKey="description">
-                    {item.description}
-                  </Td>
-                  <Td width={15} columnKey="cvss">
-                    {item.sources?.mitre?.score && (
-                      <SeverityRenderer
-                        variant="progress"
-                        score={item.sources.mitre.score}
-                      />
-                    )}
-                  </Td>
-                  <Td
-                    width={10}
-                    columnKey="affectedDependencies"
-                    compoundExpand={{
-                      isExpanded: isCellExpanded(item, "affectedDependencies"),
-                      onToggle: (
-                        event: React.MouseEvent,
-                        rowIndex: number,
-                        colIndex: number,
-                        isOpen: boolean,
-                        rowData: IRowData,
-                        extraData: IExtraData
-                      ) => {
-                        setCellExpanded({
+                    <Td
+                      width={15}
+                      {...getTdProps({ columnKey: "id" })}
+                      compoundExpand={{
+                        isExpanded: isCellExpanded(item, "id"),
+                        onToggle: (
+                          event: React.MouseEvent,
+                          rowIndex: number,
+                          colIndex: number,
+                          isOpen: boolean,
+                          rowData: IRowData,
+                          extraData: IExtraData
+                        ) => {
+                          setCellExpanded({
+                            item,
+                            isExpanding: !isOpen,
+                            columnKey: "id",
+                          });
+                        },
+                      }}
+                    >
+                      <NavLink to={`/cves/${item.id}`}>{item.id}</NavLink>
+                    </Td>
+                    <Td
+                      width={40}
+                      modifier="truncate"
+                      {...getTdProps({ columnKey: "description" })}
+                    >
+                      {item.description}
+                    </Td>
+                    <Td width={15} {...getTdProps({ columnKey: "cvss" })}>
+                      {item.sources?.mitre?.score && (
+                        <SeverityRenderer
+                          variant="progress"
+                          score={item.sources.mitre.score}
+                        />
+                      )}
+                    </Td>
+                    <Td
+                      width={10}
+                      {...getTdProps({ columnKey: "affectedDependencies" })}
+                      compoundExpand={{
+                        isExpanded: isCellExpanded(
                           item,
-                          isExpanding: !isOpen,
-                          columnKey: "affectedDependencies",
-                        });
-                      },
-                    }}
-                  >
-                    {Object.keys(item.affected_packages || {}).length}
-                  </Td>
-                  <Td width={10} columnKey="published">
-                    {dayjs(item.published as any).format(RENDER_DATE_FORMAT)}
-                  </Td>
-                  <Td width={10} columnKey="updated">
-                    {dayjs(item.updated as any).format(RENDER_DATE_FORMAT)}
-                  </Td>
+                          "affectedDependencies"
+                        ),
+                        onToggle: (
+                          event: React.MouseEvent,
+                          rowIndex: number,
+                          colIndex: number,
+                          isOpen: boolean,
+                          rowData: IRowData,
+                          extraData: IExtraData
+                        ) => {
+                          setCellExpanded({
+                            item,
+                            isExpanding: !isOpen,
+                            columnKey: "affectedDependencies",
+                          });
+                        },
+                      }}
+                    >
+                      {Object.keys(item.affected_packages || {}).length}
+                    </Td>
+                    <Td width={10} {...getTdProps({ columnKey: "published" })}>
+                      {dayjs(item.published as any).format(RENDER_DATE_FORMAT)}
+                    </Td>
+                    <Td width={10} {...getTdProps({ columnKey: "updated" })}>
+                      {dayjs(item.updated as any).format(RENDER_DATE_FORMAT)}
+                    </Td>
+                  </TableRowContentWithControls>
                 </Tr>
                 {isCellExpanded(item) ? (
-                  <PFTr isExpanded>
-                    <PFTd colSpan={7}>
+                  <Tr isExpanded>
+                    <Td colSpan={7}>
                       <ExpandableRowContent>
                         {isCellExpanded(item, "id") && (
                           <CVEDetails
@@ -225,18 +243,19 @@ export const VulnerabilitiresTable: React.FC<VulnerabilitiresTableProps> = ({
                           />
                         )}
                       </ExpandableRowContent>
-                    </PFTd>
-                  </PFTr>
+                    </Td>
+                  </Tr>
                 ) : null}
               </Tbody>
             );
           })}
         </ConditionalTableBody>
       </Table>
-      <Pagination
-        variant="bottom"
+      <SimplePagination
+        idPrefix="vulnerability-table"
+        isTop={false}
         isCompact
-        widgetId="vulnerabilities-pagination-bottom"
+        paginationProps={paginationProps}
       />
     </>
   );
@@ -258,7 +277,8 @@ const AffectedDependenciesTable = ({ data }: { data: string[] }) => {
     });
   }, [data]);
 
-  const tableControls = useClientTableBatteries({
+  const tableControls = useLocalTableControls({
+    tableName: "affected-dependencies-table",
     variant: "compact",
     persistTo: "state",
     idProperty: "purl",
@@ -272,83 +292,86 @@ const AffectedDependenciesTable = ({ data }: { data: string[] }) => {
       path: "Path",
       qualifiers: "Qualifiers",
     },
-    filter: {
-      isEnabled: true,
-      filterCategories: [],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: [],
-    },
+    isFilterEnabled: true,
+    filterCategories: [],
+    isSortEnabled: true,
+    sortableColumns: [],
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
-    },
-    expansion: { isCellExpanded, setCellExpanded },
+    propHelpers: { getThProps, getTrProps, getTdProps },
+    expansionDerivedState: { isCellExpanded },
   } = tableControls;
 
   return (
     <>
       <Table aria-label="Packages details table">
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="type" />
-            <Th columnKey="namespace" />
-            <Th columnKey="name" />
-            <Th columnKey="version" />
-            <Th columnKey="path" />
-            <Th columnKey="qualifiers" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "type" })} />
+              <Th {...getThProps({ columnKey: "namespace" })} />
+              <Th {...getThProps({ columnKey: "name" })} />
+              <Th {...getThProps({ columnKey: "version" })} />
+              <Th {...getThProps({ columnKey: "path" })} />
+              <Th {...getThProps({ columnKey: "qualifiers" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
           isNoData={pageItems.length === 0}
           numRenderedColumns={numRenderedColumns}
         >
-          <Tbody>
-            {currentPageItems?.map((item, rowIndex) => {
-              return (
-                <Tr key={item.purl} item={item} rowIndex={rowIndex}>
-                  <Td width={15} columnKey="type">
-                    {item.package?.type}
-                  </Td>
-                  <Td width={15} modifier="truncate" columnKey="namespace">
-                    {item.package?.namespace}
-                  </Td>
-                  <Td width={15} columnKey="name">
-                    <NavLink to={`/packages/${encodeURIComponent(item.purl)}`}>
-                      {item.package?.name}
-                    </NavLink>
-                  </Td>
-                  <Td width={15} columnKey="version">
-                    {item.package?.version}
-                  </Td>
-                  <Td width={10} modifier="truncate" columnKey="path">
-                    {item.package?.subpath}
-                  </Td>
-                  <Td width={30} columnKey="qualifiers">
-                    {Object.entries(item.package?.qualifiers || {}).map(
-                      ([k, v], index) => (
-                        <Label key={index} isCompact>{`${k}=${v}`}</Label>
-                      )
-                    )}
-                  </Td>
+          {currentPageItems?.map((item, rowIndex) => {
+            return (
+              <Tbody key={item.purl}>
+                <Tr {...getTrProps({ item })}>
+                  <TableRowContentWithControls
+                    {...tableControls}
+                    item={item}
+                    rowIndex={rowIndex}
+                  >
+                    <Td width={15} {...getTdProps({ columnKey: "type" })}>
+                      {item.package?.type}
+                    </Td>
+                    <Td
+                      width={15}
+                      modifier="truncate"
+                      {...getTdProps({ columnKey: "namespace" })}
+                    >
+                      {item.package?.namespace}
+                    </Td>
+                    <Td width={15} {...getTdProps({ columnKey: "name" })}>
+                      <NavLink
+                        to={`/packages/${encodeURIComponent(item.purl)}`}
+                      >
+                        {item.package?.name}
+                      </NavLink>
+                    </Td>
+                    <Td width={15} {...getTdProps({ columnKey: "version" })}>
+                      {item.package?.version}
+                    </Td>
+                    <Td
+                      width={10}
+                      modifier="truncate"
+                      {...getTdProps({ columnKey: "path" })}
+                    >
+                      {item.package?.subpath}
+                    </Td>
+                    <Td width={30} {...getTdProps({ columnKey: "qualifiers" })}>
+                      {Object.entries(item.package?.qualifiers || {}).map(
+                        ([k, v], index) => (
+                          <Label key={index} isCompact>{`${k}=${v}`}</Label>
+                        )
+                      )}
+                    </Td>
+                  </TableRowContentWithControls>
                 </Tr>
-              );
-            })}
-          </Tbody>
+              </Tbody>
+            );
+          })}
         </ConditionalTableBody>
       </Table>
     </>

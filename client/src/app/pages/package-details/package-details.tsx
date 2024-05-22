@@ -1,6 +1,9 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 
+import { PackageURL } from "packageurl-js";
+
+import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,13 +12,10 @@ import {
   TextContent,
 } from "@patternfly/react-core";
 
-import DetailsPage from "@patternfly/react-component-groups/dist/dynamic/DetailsPage";
-
 import { PathParam, useRouteParams } from "@app/Routes";
-import { useFetchPackageById } from "@app/queries/packages";
-import { PackageURL } from "packageurl-js";
-
 import { LoadingWrapper } from "@app/components/LoadingWrapper";
+import { useFetchPackageById } from "@app/queries/packages";
+
 import { RelatedProducts } from "./related-products";
 import { RelatedVulnerabilities } from "./related-vulnerabilities";
 

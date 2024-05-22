@@ -1,39 +1,46 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Button } from "@patternfly/react-core";
-import {
-  ExpandableRowContent,
-  Td as PFTd,
-  Tr as PFTr,
-} from "@patternfly/react-table";
 
 import dayjs from "dayjs";
 
-import {
-  ConditionalTableBody,
-  FilterType,
-  useTablePropHelpers,
-  useTableState,
-} from "@carlosthe19916-latest/react-table-batteries";
-
+import { Button } from "@patternfly/react-core";
 import DownloadIcon from "@patternfly/react-icons/dist/esm/icons/download-icon";
-
-import { RHSeverityShield } from "@app/components/csaf/rh-severity";
-import { useDownload } from "@app/hooks/csaf/download-advisory";
-import { getHubRequestParams } from "@app/hooks/table-controls";
+import {
+  ExpandableRowContent,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from "@patternfly/react-table";
 
 import {
   FILTER_DATE_FORMAT,
   TablePersistenceKeyPrefixes,
 } from "@app/Constants";
+import { FilterType } from "@app/components/FilterToolbar";
+import {
+  ConditionalTableBody,
+  TableHeaderContentWithControls,
+  TableRowContentWithControls,
+} from "@app/components/TableControls";
+import { RHSeverityShield } from "@app/components/csaf/rh-severity";
+import { useDownload } from "@app/hooks/csaf/download-advisory";
+import {
+  getHubRequestParams,
+  useTableControlProps,
+  useTableControlState,
+} from "@app/hooks/table-controls";
+import { useSelectionState } from "@app/hooks/useSelectionState";
 import { useFetchAdvisories } from "@app/queries/advisories";
-import { formatRustDate } from "@app/utils/utils";
 
 import { AdvisoryDetails } from "./advisory-details";
 import { VulnerabilitiesCount } from "./vulnerabilities";
 
 export const useAdvisoryList = () => {
-  const tableState = useTableState({
+  const tableControlState = useTableControlState({
+    tableName: "advisories",
     persistTo: "state",
     persistenceKeyPrefix: TablePersistenceKeyPrefixes.advisories,
     columnNames: {
@@ -44,164 +51,178 @@ export const useAdvisoryList = () => {
       vulnerabilities: "Vulnerabilities",
       download: "Download",
     },
-    filter: {
-      isEnabled: true,
-      filterCategories: [
-        {
-          key: "filterText",
-          title: "Filter text",
-          placeholderText: "Search",
-          type: FilterType.search,
-        },
-        {
-          key: "severity",
-          title: "Severity",
-          placeholderText: "Severity",
-          type: FilterType.multiselect,
-          selectOptions: [
-            { key: "low", value: "Low" },
-            { key: "moderate", value: "Moderate" },
-            { key: "important", value: "Important" },
-            { key: "critical", value: "Critical" },
-          ],
-        },
-        {
-          key: "package:in",
-          title: "Product",
-          placeholderText: "Product",
-          type: FilterType.multiselect,
-          selectOptions: [
-            {
-              key: "cpe:/o:redhat:rhel_eus:7",
-              value: "Red Hat Enterprise Linux 7",
-            },
-            {
-              key: "cpe:/o:redhat:rhel_eus:8",
-              value: "Red Hat Enterprise Linux 8",
-            },
-            {
-              key: "cpe:/a:redhat:enterprise_linux:9",
-              value: "Red Hat Enterprise Linux 9",
-            },
-            {
-              key: "cpe:/a:redhat:openshift:3",
-              value: "Openshift Container Platform 3",
-            },
-            {
-              key: "cpe:/a:redhat:openshift:4",
-              value: "Openshift Container Platform 4",
-            },
-          ],
-        },
-        {
-          key: "release",
-          title: "Revision",
-          placeholderText: "Revision",
-          type: FilterType.select,
-          selectOptions: [
-            {
-              key: `${dayjs().subtract(7, "day").format(FILTER_DATE_FORMAT)}..${dayjs().format(FILTER_DATE_FORMAT)}`,
-              value: "Last 7 days",
-            },
-            {
-              key: `${dayjs().subtract(30, "day").format(FILTER_DATE_FORMAT)}..${dayjs().format(FILTER_DATE_FORMAT)}`,
-              value: "Last 30 days",
-            },
-            {
-              key: `${dayjs().startOf("year").format(FILTER_DATE_FORMAT)}..${dayjs().format(FILTER_DATE_FORMAT)}`,
-              value: "This year",
-            },
-            ...[...Array(3)].map((_, index) => {
-              const date = dayjs()
-                .startOf("year")
-                .subtract(index + 1, "year");
-              return {
-                key: `${date.format(FILTER_DATE_FORMAT)}..${date.endOf("year").format(FILTER_DATE_FORMAT)}`,
-                value: date.year(),
-              };
-            }),
-          ],
-        },
-      ],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: ["severity"],
-    },
-    pagination: { isEnabled: true },
-    expansion: {
-      isEnabled: true,
-      variant: "single",
-    },
-  });
-
-  const { filter, cacheKey } = tableState;
-  const hubRequestParams = React.useMemo(() => {
-    return getHubRequestParams({
-      ...tableState,
-      filterCategories: filter.filterCategories,
-      hubSortFieldKeys: {
-        severity: "severity",
+    isFilterEnabled: true,
+    filterCategories: [
+      {
+        categoryKey: "filterText",
+        title: "Filter text",
+        placeholderText: "Search",
+        type: FilterType.search,
       },
-    });
-  }, [cacheKey]);
-
-  const { isFetching, fetchError, result } =
-    useFetchAdvisories(hubRequestParams);
-
-  const tableProps = useTablePropHelpers({
-    ...tableState,
-    idProperty: "id",
-    isLoading: isFetching,
-    currentPageItems: result.data,
-    totalItemCount: result.total,
+      {
+        categoryKey: "severity",
+        title: "Severity",
+        placeholderText: "Severity",
+        type: FilterType.multiselect,
+        selectOptions: [
+          { value: "low", label: "Low" },
+          { value: "moderate", label: "Moderate" },
+          { value: "important", label: "Important" },
+          { value: "critical", label: "Critical" },
+        ],
+      },
+      {
+        categoryKey: "package:in",
+        title: "Product",
+        placeholderText: "Product",
+        type: FilterType.multiselect,
+        selectOptions: [
+          {
+            value: "cpe:/o:redhat:rhel_eus:7",
+            label: "Red Hat Enterprise Linux 7",
+          },
+          {
+            value: "cpe:/o:redhat:rhel_eus:8",
+            label: "Red Hat Enterprise Linux 8",
+          },
+          {
+            value: "cpe:/a:redhat:enterprise_linux:9",
+            label: "Red Hat Enterprise Linux 9",
+          },
+          {
+            value: "cpe:/a:redhat:openshift:3",
+            label: "Openshift Container Platform 3",
+          },
+          {
+            value: "cpe:/a:redhat:openshift:4",
+            label: "Openshift Container Platform 4",
+          },
+        ],
+      },
+      {
+        categoryKey: "release",
+        title: "Revision",
+        placeholderText: "Revision",
+        type: FilterType.select,
+        selectOptions: [
+          {
+            value: `${dayjs().subtract(7, "day").format(FILTER_DATE_FORMAT)}..${dayjs().format(FILTER_DATE_FORMAT)}`,
+            label: "Last 7 days",
+          },
+          {
+            value: `${dayjs().subtract(30, "day").format(FILTER_DATE_FORMAT)}..${dayjs().format(FILTER_DATE_FORMAT)}`,
+            label: "Last 30 days",
+          },
+          {
+            value: `${dayjs().startOf("year").format(FILTER_DATE_FORMAT)}..${dayjs().format(FILTER_DATE_FORMAT)}`,
+            label: "This year",
+          },
+          ...[...Array(3)].map((_, index) => {
+            const date = dayjs()
+              .startOf("year")
+              .subtract(index + 1, "year");
+            return {
+              value: `${date.format(FILTER_DATE_FORMAT)}..${date.endOf("year").format(FILTER_DATE_FORMAT)}`,
+              label: date.year().toString(),
+            };
+          }),
+        ],
+      },
+    ],
+    isSortEnabled: true,
+    sortableColumns: ["severity"],
+    isPaginationEnabled: true,
+    isExpansionEnabled: true,
+    expandableVariant: "single",
   });
 
   const {
-    currentPageItems,
+    result: { data: advisories, total: totalItemCount },
+    isFetching,
+    fetchError,
+  } = useFetchAdvisories(
+    getHubRequestParams({
+      ...tableControlState,
+      hubSortFieldKeys: {
+        severity: "severity",
+      },
+    })
+  );
+
+  const tableControls = useTableControlProps({
+    ...tableControlState,
+    idProperty: "id",
+    currentPageItems: advisories,
+    totalItemCount,
+    isLoading: isFetching,
+    selectionState: useSelectionState({
+      items: advisories,
+      isEqual: (a, b) => a.id === b.id,
+    }),
+  });
+
+  const {
     numRenderedColumns,
-    components: { Table, Thead, Tr, Th, Tbody, Td, Pagination },
-    expansion: { isCellExpanded },
-  } = tableProps;
+    currentPageItems,
+    propHelpers: { tableProps, getThProps, getTrProps, getTdProps },
+    expansionDerivedState: { isCellExpanded },
+  } = tableControls;
 
   const { downloadAdvisory } = useDownload();
 
   const table = (
-    <>
-      <Table aria-label="Advisory details table">
-        <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="id" />
-            <Th columnKey="title" />
-            <Th columnKey="severity" />
-            <Th columnKey="revision" />
-            <Th columnKey="vulnerabilities" />
-            <Th columnKey="download" />
-          </Tr>
-        </Thead>
-        <ConditionalTableBody
-          isLoading={isFetching}
-          isError={!!fetchError}
-          isNoData={result.total === 0}
-          numRenderedColumns={numRenderedColumns}
-        >
-          {currentPageItems?.map((item, rowIndex) => {
-            return (
-              <Tbody key={item.id}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <Td width={15} columnKey="id">
+    <Table {...tableProps} aria-label="Advisories table">
+      <Thead>
+        <Tr>
+          <TableHeaderContentWithControls {...tableControls}>
+            <Th {...getThProps({ columnKey: "id" })} />
+            <Th {...getThProps({ columnKey: "title" })} />
+            <Th {...getThProps({ columnKey: "severity" })} />
+            <Th {...getThProps({ columnKey: "revision" })} />
+            <Th {...getThProps({ columnKey: "vulnerabilities" })} />
+            <Th {...getThProps({ columnKey: "download" })} />
+          </TableHeaderContentWithControls>
+        </Tr>
+      </Thead>
+      <ConditionalTableBody
+        isLoading={isFetching}
+        isError={!!fetchError}
+        isNoData={totalItemCount === 0}
+        numRenderedColumns={numRenderedColumns}
+      >
+        {currentPageItems?.map((item, rowIndex) => {
+          return (
+            <Tbody key={item.id}>
+              <Tr {...getTrProps({ item })}>
+                <TableRowContentWithControls
+                  {...tableControls}
+                  item={item}
+                  rowIndex={rowIndex}
+                >
+                  <Td width={15} {...getTdProps({ columnKey: "id" })}>
                     <NavLink to={`/advisories/${item.id}`}>{item.id}</NavLink>
                   </Td>
-                  <Td width={45} modifier="truncate" columnKey="title">
+                  <Td
+                    width={45}
+                    modifier="truncate"
+                    {...getTdProps({ columnKey: "title" })}
+                  >
                     {item.title}
                   </Td>
-                  <Td width={10} columnKey="severity">
+                  <Td width={10} {...getTdProps({ columnKey: "severity" })}>
                     <RHSeverityShield value={item.severity} />
                   </Td>
-                  <Td width={10} modifier="truncate" columnKey="revision">
-                    {formatRustDate(item.date)}
+                  <Td
+                    width={10}
+                    modifier="truncate"
+                    {...getTdProps({ columnKey: "revision" })}
+                  >
+                    {item.date}
                   </Td>
-                  <Td width={10} columnKey="vulnerabilities">
+                  <Td
+                    width={10}
+                    {...getTdProps({ columnKey: "vulnerabilities" })}
+                  >
                     {item.cves.length === 0 ? (
                       "N/A"
                     ) : (
@@ -210,7 +231,7 @@ export const useAdvisoryList = () => {
                       />
                     )}
                   </Td>
-                  <Td width={10} columnKey="download">
+                  <Td width={10} {...getTdProps({ columnKey: "download" })}>
                     <Button
                       variant="plain"
                       aria-label="Download"
@@ -221,34 +242,32 @@ export const useAdvisoryList = () => {
                       <DownloadIcon />
                     </Button>
                   </Td>
+                </TableRowContentWithControls>
+              </Tr>
+              {isCellExpanded(item) ? (
+                <Tr isExpanded>
+                  <Td colSpan={7}>
+                    <ExpandableRowContent>
+                      <AdvisoryDetails id={item.id} />
+                    </ExpandableRowContent>
+                  </Td>
                 </Tr>
-                {isCellExpanded(item) ? (
-                  <PFTr isExpanded>
-                    <PFTd colSpan={7}>
-                      <ExpandableRowContent>
-                        <AdvisoryDetails id={item.id} />
-                      </ExpandableRowContent>
-                    </PFTd>
-                  </PFTr>
-                ) : null}
-              </Tbody>
-            );
-          })}
-        </ConditionalTableBody>
-      </Table>
-      <Pagination
-        variant="bottom"
-        isCompact
-        widgetId="advisories-pagination-bottom"
-      />
-    </>
+              ) : null}
+            </Tbody>
+          );
+        })}
+      </ConditionalTableBody>
+    </Table>
   );
 
   return {
-    tableProps,
-    isFetching,
-    fetchError,
-    total: result.total,
-    table,
+    data: {
+      isFetching,
+      fetchError,
+      advisories,
+      totalItemCount,
+    },
+    tableControls,
+    components: { table },
   };
 };

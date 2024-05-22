@@ -5,23 +5,28 @@ import {
   PageSectionVariants,
   Text,
   TextContent,
+  Toolbar,
   ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
+
+import { FilterToolbar } from "@app/components/FilterToolbar";
+import { SimplePagination } from "@app/components/SimplePagination";
 
 import { useSbomList } from "./useSbomList";
 
 export const SbomList: React.FC = () => {
-  const { tableProps, table } = useSbomList();
-
   const {
-    components: {
-      Table,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    components: { table },
+    tableControls: {
+      propHelpers: {
+        toolbarProps,
+        filterToolbarProps,
+        paginationToolbarItemProps,
+        paginationProps,
+      },
     },
-  } = tableProps;
+  } = useSbomList();
 
   return (
     <>
@@ -37,22 +42,25 @@ export const SbomList: React.FC = () => {
             backgroundColor: "var(--pf-v5-global--BackgroundColor--100)",
           }}
         >
-          <Toolbar>
+          <Toolbar {...toolbarProps}>
             <ToolbarContent>
-              <FilterToolbar
-                id="sboms-toolbar"
-                {...{ showFiltersSideBySide: true }}
-              />
-              <PaginationToolbarItem>
-                <Pagination
-                  variant="top"
-                  isCompact
-                  widgetId="sboms-pagination-top"
+              <FilterToolbar showFiltersSideBySide {...filterToolbarProps} />
+              <ToolbarItem {...paginationToolbarItemProps}>
+                <SimplePagination
+                  idPrefix="sbom-table"
+                  isTop
+                  paginationProps={paginationProps}
                 />
-              </PaginationToolbarItem>
+              </ToolbarItem>
             </ToolbarContent>
           </Toolbar>
           {table}
+          <SimplePagination
+            idPrefix="sbom-table"
+            isTop
+            isCompact
+            paginationProps={paginationProps}
+          />
         </div>
       </PageSection>
     </>

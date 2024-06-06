@@ -1,10 +1,8 @@
 import React from "react";
-import { Sbom, SbomCycloneDx, SbomSPDX, SbomType } from "@app/api/models";
-import {
-  ConditionalTableBody,
-  FilterType,
-  useClientTableBatteries,
-} from "@carlosthe19916-latest/react-table-batteries";
+import { NavLink } from "react-router-dom";
+
+import { PackageURL } from "packageurl-js";
+
 import {
   DescriptionList,
   DescriptionListDescription,
@@ -13,16 +11,30 @@ import {
   Label,
   List,
   ListItem,
+  Toolbar,
   ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
 import {
   ExpandableRowContent,
   Td as PFTd,
   Tr as PFTr,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from "@patternfly/react-table";
 
-import { PackageURL } from "packageurl-js";
-import { NavLink } from "react-router-dom";
+import { Sbom, SbomCycloneDx, SbomSPDX, SbomType } from "@app/api/models";
+import { FilterToolbar, FilterType } from "@app/components/FilterToolbar";
+import { SimplePagination } from "@app/components/SimplePagination";
+import {
+  ConditionalTableBody,
+  TableHeaderContentWithControls,
+} from "@app/components/TableControls";
+import { useLocalTableControls } from "@app/hooks/table-controls";
 
 interface PackagesProps {
   data: Sbom;
@@ -62,8 +74,8 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
     });
   }, [sbom]);
 
-  const tableControls = useClientTableBatteries({
-    persistTo: "state",
+  const tableControls = useLocalTableControls({
+    tableName: "package-table",
     idProperty: "id",
     items: pageItems || [],
     isLoading: false,
@@ -72,71 +84,68 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
       version: "Version",
       qualifiers: "Qualifiers",
     },
-    filter: {
-      isEnabled: true,
-      filterCategories: [
-        {
-          key: "cve",
-          title: "ID",
-          type: FilterType.search,
-          placeholderText: "Search...",
-          getItemValue: (item) =>
-            item.package
-              ? `${item.package.name} ${item.package.namespace}`
-              : item.name,
-        },
-      ],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: [],
-    },
-    expansion: {
-      isEnabled: true,
-      variant: "single",
-      persistTo: "state",
-    },
+    isFilterEnabled: true,
+    filterCategories: [
+      {
+        categoryKey: "cve",
+        title: "ID",
+        type: FilterType.search,
+        placeholderText: "Search...",
+        getItemValue: (item) =>
+          item.package
+            ? `${item.package.name} ${item.package.namespace}`
+            : item.name,
+      },
+    ],
+    isSortEnabled: true,
+    sortableColumns: [],
+    isExpansionEnabled: true,
+    expandableVariant: "single",
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    propHelpers: {
+      toolbarProps,
+      filterToolbarProps,
+      paginationToolbarItemProps,
+      paginationProps,
+      tableProps,
+      getThProps,
+      getTrProps,
+      getTdProps,
     },
-    expansion: { isCellExpanded },
+    expansionDerivedState: { isCellExpanded },
   } = tableControls;
 
   return (
     <>
-      <Toolbar>
+      <Toolbar {...toolbarProps}>
         <ToolbarContent>
-          <FilterToolbar id="packages-toolbar" />
-          <PaginationToolbarItem>
-            <Pagination
-              variant="top"
-              isCompact
-              widgetId="packages-pagination-top"
+          <FilterToolbar showFiltersSideBySide {...filterToolbarProps} />
+          <ToolbarItem {...paginationToolbarItemProps}>
+            <SimplePagination
+              idPrefix="package-table"
+              isTop
+              paginationProps={paginationProps}
             />
-          </PaginationToolbarItem>
+          </ToolbarItem>
         </ToolbarContent>
       </Toolbar>
 
-      <Table aria-label="Packages table" className="vertical-aligned-table">
+      <Table
+        {...tableProps}
+        aria-label="Package table"
+        className="vertical-aligned-table"
+      >
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="name" />
-            <Th columnKey="version" />
-            <Th columnKey="qualifiers" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "name" })} />
+              <Th {...getThProps({ columnKey: "version" })} />
+              <Th {...getThProps({ columnKey: "qualifiers" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
@@ -159,8 +168,12 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
 
             return (
               <Tbody key={item.id}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <Td width={50} modifier="truncate" columnKey="name">
+                <Tr {...getTrProps({ item })}>
+                  <Td
+                    width={50}
+                    modifier="truncate"
+                    {...getTdProps({ columnKey: "name" })}
+                  >
                     {item.package ? (
                       <>
                         {`${item.package.name}/${item.package.namespace}`}{" "}
@@ -170,10 +183,14 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
                       item.name
                     )}
                   </Td>
-                  <Td width={20} modifier="truncate" columnKey="version">
+                  <Td
+                    width={20}
+                    modifier="truncate"
+                    {...getTdProps({ columnKey: "version" })}
+                  >
                     {item.versionInfo}
                   </Td>
-                  <Td width={30} columnKey="qualifiers">
+                  <Td width={30} {...getTdProps({ columnKey: "qualifiers" })}>
                     {item.package &&
                       Object.entries(item.package?.qualifiers || {}).map(
                         ([k, v], index) => (
@@ -183,8 +200,8 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
                   </Td>
                 </Tr>
                 {isCellExpanded(item) ? (
-                  <PFTr isExpanded>
-                    <PFTd colSpan={7}>
+                  <Tr isExpanded>
+                    <Td colSpan={7}>
                       <div className="pf-v5-u-m-md">
                         <ExpandableRowContent>
                           <DescriptionList isCompact isAutoFit>
@@ -235,18 +252,19 @@ export const SpxdPackages: React.FC<SpxdPackagesProps> = ({ sbom }) => {
                           </DescriptionList>
                         </ExpandableRowContent>
                       </div>
-                    </PFTd>
-                  </PFTr>
+                    </Td>
+                  </Tr>
                 ) : null}
               </Tbody>
             );
           })}
         </ConditionalTableBody>
       </Table>
-      <Pagination
-        variant="bottom"
+      <SimplePagination
+        idPrefix="package-table"
+        isTop={false}
         isCompact
-        widgetId="vulnerabilities-pagination-bottom"
+        paginationProps={paginationProps}
       />
     </>
   );
@@ -276,7 +294,8 @@ export const CycloneDxPackages: React.FC<CycloneDxPackagesProps> = ({
     });
   }, [sbom]);
 
-  const tableControls = useClientTableBatteries({
+  const tableControls = useLocalTableControls({
+    tableName: "package-table",
     persistTo: "state",
     idProperty: "purl",
     items: pageItems || [],
@@ -286,71 +305,68 @@ export const CycloneDxPackages: React.FC<CycloneDxPackagesProps> = ({
       version: "Version",
       qualifiers: "Qualifiers",
     },
-    filter: {
-      isEnabled: true,
-      filterCategories: [
-        {
-          key: "cve",
-          title: "ID",
-          type: FilterType.search,
-          placeholderText: "Search...",
-          getItemValue: (item) =>
-            item.package
-              ? `${item.package.name} ${item.package.namespace}`
-              : item.name,
-        },
-      ],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: [],
-    },
-    expansion: {
-      isEnabled: true,
-      variant: "single",
-      persistTo: "state",
-    },
+    isFilterEnabled: true,
+    filterCategories: [
+      {
+        categoryKey: "cve",
+        title: "ID",
+        type: FilterType.search,
+        placeholderText: "Search...",
+        getItemValue: (item) =>
+          item.package
+            ? `${item.package.name} ${item.package.namespace}`
+            : item.name,
+      },
+    ],
+    isSortEnabled: true,
+    sortableColumns: [],
+    isExpansionEnabled: true,
+    expandableVariant: "single",
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    propHelpers: {
+      toolbarProps,
+      filterToolbarProps,
+      paginationToolbarItemProps,
+      paginationProps,
+      tableProps,
+      getThProps,
+      getTrProps,
+      getTdProps,
     },
-    expansion: { isCellExpanded, setCellExpanded },
+    expansionDerivedState: { isCellExpanded },
   } = tableControls;
 
   return (
     <>
-      <Toolbar>
+      <Toolbar {...toolbarProps}>
         <ToolbarContent>
-          <FilterToolbar id="packages-toolbar" />
-          <PaginationToolbarItem>
-            <Pagination
-              variant="top"
-              isCompact
-              widgetId="packages-pagination-top"
+          <FilterToolbar showFiltersSideBySide {...filterToolbarProps} />
+          <ToolbarItem {...paginationToolbarItemProps}>
+            <SimplePagination
+              idPrefix="package-table"
+              isTop
+              paginationProps={paginationProps}
             />
-          </PaginationToolbarItem>
+          </ToolbarItem>
         </ToolbarContent>
       </Toolbar>
 
-      <Table aria-label="Packages table" className="vertical-aligned-table">
+      <Table
+        {...tableProps}
+        aria-label="Package table"
+        className="vertical-aligned-table"
+      >
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="name" />
-            <Th columnKey="version" />
-            <Th columnKey="qualifiers" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "name" })} />
+              <Th {...getThProps({ columnKey: "version" })} />
+              <Th {...getThProps({ columnKey: "qualifiers" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
@@ -360,8 +376,12 @@ export const CycloneDxPackages: React.FC<CycloneDxPackagesProps> = ({
           {currentPageItems?.map((item, rowIndex) => {
             return (
               <Tbody key={item.purl}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <Td width={50} modifier="truncate" columnKey="name">
+                <Tr {...getTrProps({ item })}>
+                  <Td
+                    width={50}
+                    modifier="truncate"
+                    {...getTdProps({ columnKey: "name" })}
+                  >
                     {item.package ? (
                       <>
                         {`${item.package.name}/${item.package.namespace}`}{" "}
@@ -371,10 +391,14 @@ export const CycloneDxPackages: React.FC<CycloneDxPackagesProps> = ({
                       item.name
                     )}
                   </Td>
-                  <Td width={20} modifier="truncate" columnKey="version">
+                  <Td
+                    width={20}
+                    modifier="truncate"
+                    {...getTdProps({ columnKey: "version" })}
+                  >
                     {item.version}
                   </Td>
-                  <Td width={30} columnKey="qualifiers">
+                  <Td width={30} {...getTdProps({ columnKey: "qualifiers" })}>
                     {item.package &&
                       Object.entries(item.package?.qualifiers || {}).map(
                         ([k, v], index) => (
@@ -414,10 +438,11 @@ export const CycloneDxPackages: React.FC<CycloneDxPackagesProps> = ({
           })}
         </ConditionalTableBody>
       </Table>
-      <Pagination
-        variant="bottom"
+      <SimplePagination
+        idPrefix="package-table"
+        isTop={false}
         isCompact
-        widgetId="vulnerabilities-pagination-bottom"
+        paginationProps={paginationProps}
       />
     </>
   );

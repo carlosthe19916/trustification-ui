@@ -34,8 +34,8 @@ export type TrustificationEnvType = {
   /** Target URL for the UI server's `/auth` proxy */
   OIDC_SERVER_URL?: string;
 
-  /** Target URL for the UI server's `/hub` proxy */
-  TRUSTIFICATION_HUB_URL?: string;
+  /** Target URL for the UI server's `/api` proxy */
+  TRUSTIFICATION_API_URL?: string;
 
   /** Location of branding files (relative paths computed from the project source root) */
   BRANDING?: string;
@@ -51,7 +51,7 @@ export type TrustificationEnvType = {
  * Keys in `TrustificationEnv` that are only used on the server and therefore do not
  * need to be sent to the client.
  */
-export const SERVER_ENV_KEYS = ["PORT", "TRUSTIFICATION_HUB_URL", "BRANDING"];
+export const SERVER_ENV_KEYS = ["PORT", "TRUSTIFICATION_API_URL", "BRANDING"];
 
 /**
  * Create a `TrustificationEnv` from a partial `TrustificationEnv` with a set of default values.
@@ -62,13 +62,13 @@ export const buildTrustificationEnv = ({
   VERSION = "99.0.0",
   MOCK = "off",
 
-  OIDC_SERVER_URL,
+  OIDC_SERVER_URL = "http://localhost:8090/realms/chicken",
   AUTH_REQUIRED = "false",
   OIDC_CLIENT_ID = "frontend",
   OIDC_SCOPE,
 
   UI_INGRESS_PROXY_BODY_SIZE = "500m",
-  TRUSTIFICATION_HUB_URL,
+  TRUSTIFICATION_API_URL,
   BRANDING,
 
   ANALYTICS_ENABLED = "false",
@@ -85,7 +85,7 @@ export const buildTrustificationEnv = ({
   OIDC_SCOPE,
 
   UI_INGRESS_PROXY_BODY_SIZE,
-  TRUSTIFICATION_HUB_URL,
+  TRUSTIFICATION_API_URL,
   BRANDING,
 
   ANALYTICS_ENABLED,

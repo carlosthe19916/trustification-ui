@@ -1,18 +1,21 @@
-import { Skeleton } from "@patternfly/react-core";
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-import { Td as PFTd } from "@patternfly/react-table";
+import { AxiosError } from "axios";
 
-import {
-  ConditionalTableBody,
-  useClientTableBatteries,
-} from "@carlosthe19916-latest/react-table-batteries";
+import { Skeleton } from "@patternfly/react-core";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 
 import { SbomIndexed } from "@app/api/models";
+import { SimplePagination } from "@app/components/SimplePagination";
+import {
+  ConditionalTableBody,
+  TableHeaderContentWithControls,
+  TableRowContentWithControls,
+} from "@app/components/TableControls";
+import { useLocalTableControls } from "@app/hooks/table-controls";
 import { useFetchPackageRelatedProducts } from "@app/queries/packages";
 import { useFetchSbomIndexedByUId } from "@app/queries/sboms";
-import { AxiosError } from "axios";
 
 interface RelatedProductsProps {
   packageId: string;
@@ -24,7 +27,8 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
   const { relatedProducts, isFetching, fetchError } =
     useFetchPackageRelatedProducts(packageId);
 
-  const tableControls = useClientTableBatteries({
+  const tableControls = useLocalTableControls({
+    tableName: "related-products-table",
     persistTo: "sessionStorage",
     idProperty: "sbom_uid",
     items: relatedProducts?.related_products || [],
@@ -36,65 +40,43 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
       dependency: "Dependency",
     },
     hasActionsColumn: true,
-    filter: {
-      isEnabled: true,
-      filterCategories: [],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: [],
-    },
-    pagination: { isEnabled: true },
-    expansion: {
-      isEnabled: false,
-      variant: "single",
-      persistTo: "state",
-    },
+    isFilterEnabled: true,
+    filterCategories: [],
+    isSortEnabled: true,
+    sortableColumns: [],
+    isPaginationEnabled: true,
+    isExpansionEnabled: true,
+    expandableVariant: "single",
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    propHelpers: {
+      paginationProps,
+      tableProps,
+      getThProps,
+      getTrProps,
+      getTdProps,
     },
-    expansion: { isCellExpanded, setCellExpanded },
+    expansionDerivedState: { isCellExpanded },
   } = tableControls;
 
   return (
     <>
-      {/* <Toolbar>
-        <ToolbarContent>
-          <FilterToolbar id="related-products-toolbar" />
-          <PaginationToolbarItem>
-            <Pagination
-              variant="top"
-              isCompact
-              widgetId="related-products-pagination-top"
-            />
-          </PaginationToolbarItem>
-        </ToolbarContent>
-      </Toolbar> */}
-
       <Table
+        {...tableProps}
         aria-label="Related products table"
         className="vertical-aligned-table"
       >
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="name" />
-            <Th columnKey="version" />
-            <Th columnKey="supplier" />
-            <Th columnKey="dependency" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "name" })} />
+              <Th {...getThProps({ columnKey: "version" })} />
+              <Th {...getThProps({ columnKey: "supplier" })} />
+              <Th {...getThProps({ columnKey: "dependency" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
@@ -106,58 +88,68 @@ export const RelatedProducts: React.FC<RelatedProductsProps> = ({
           {currentPageItems?.map((item, rowIndex) => {
             return (
               <Tbody key={item.sbom_uid} isExpanded={isCellExpanded(item)}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <TdWrapper sbom_uid={item.sbom_uid}>
-                    {(sbom, isFetching, fetchError) => (
-                      <>
-                        {isFetching ? (
-                          <PFTd width={100} colSpan={4}>
-                            <Skeleton />
-                          </PFTd>
-                        ) : (
-                          <>
-                            <Td width={45} columnKey="name">
-                              <NavLink to={`/sboms/${sbom?.id}`}>
-                                {sbom?.name}
-                              </NavLink>
+                <Tr {...getTrProps({ item })}>
+                  <TableRowContentWithControls
+                    {...tableControls}
+                    item={item}
+                    rowIndex={rowIndex}
+                  >
+                    <TdWrapper sbom_uid={item.sbom_uid}>
+                      {(sbom, isFetching, fetchError) => (
+                        <>
+                          {isFetching ? (
+                            <Td width={100} colSpan={4}>
+                              <Skeleton />
                             </Td>
-                            <Td
-                              width={15}
-                              modifier="truncate"
-                              columnKey="version"
-                            >
-                              {sbom?.version}
-                            </Td>
-                            <Td
-                              width={25}
-                              modifier="truncate"
-                              columnKey="supplier"
-                            >
-                              {sbom?.supplier}
-                            </Td>
-                            <Td
-                              width={15}
-                              modifier="truncate"
-                              columnKey="dependency"
-                            >
-                              {/* // TODO */}
-                              Direct
-                            </Td>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </TdWrapper>
+                          ) : (
+                            <>
+                              <Td
+                                width={45}
+                                {...getTdProps({ columnKey: "name" })}
+                              >
+                                <NavLink to={`/sboms/${sbom?.id}`}>
+                                  {sbom?.name}
+                                </NavLink>
+                              </Td>
+                              <Td
+                                width={15}
+                                modifier="truncate"
+                                {...getTdProps({ columnKey: "version" })}
+                              >
+                                {sbom?.version}
+                              </Td>
+                              <Td
+                                width={25}
+                                modifier="truncate"
+                                {...getTdProps({ columnKey: "supplier" })}
+                              >
+                                {sbom?.supplier}
+                              </Td>
+                              <Td
+                                width={15}
+                                modifier="truncate"
+                                {...getTdProps({ columnKey: "dependency" })}
+                              >
+                                {/* // TODO */}
+                                Direct
+                              </Td>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </TdWrapper>
+                  </TableRowContentWithControls>
                 </Tr>
               </Tbody>
             );
           })}
         </ConditionalTableBody>
       </Table>
-      <Pagination
-        variant="bottom"
+      <SimplePagination
+        idPrefix="related-products-table"
+        isTop={false}
         isCompact
-        widgetId="related-products-pagination-bottom"
+        paginationProps={paginationProps}
       />
     </>
   );

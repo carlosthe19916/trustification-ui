@@ -5,17 +5,28 @@ import {
   PageSectionVariants,
   Text,
   TextContent,
+  Toolbar,
   ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
+
+import { FilterToolbar } from "@app/components/FilterToolbar";
+import { SimplePagination } from "@app/components/SimplePagination";
 
 import { useAdvisoryList } from "./useAdvisoryList";
 
 export const AdvisoryList: React.FC = () => {
-  const { tableProps, table } = useAdvisoryList();
-
   const {
-    components: { Toolbar, FilterToolbar, PaginationToolbarItem, Pagination },
-  } = tableProps;
+    components: { table },
+    tableControls: {
+      propHelpers: {
+        toolbarProps,
+        filterToolbarProps,
+        paginationToolbarItemProps,
+        paginationProps,
+      },
+    },
+  } = useAdvisoryList();
 
   return (
     <>
@@ -30,22 +41,25 @@ export const AdvisoryList: React.FC = () => {
             backgroundColor: "var(--pf-v5-global--BackgroundColor--100)",
           }}
         >
-          <Toolbar>
+          <Toolbar {...toolbarProps}>
             <ToolbarContent>
-              <FilterToolbar
-                id="advisory-toolbar"
-                {...{ showFiltersSideBySide: true }}
-              />
-              <PaginationToolbarItem>
-                <Pagination
-                  variant="top"
-                  isCompact
-                  widgetId="advisories-pagination-top"
+              <FilterToolbar showFiltersSideBySide {...filterToolbarProps} />
+              <ToolbarItem {...paginationToolbarItemProps}>
+                <SimplePagination
+                  idPrefix="advisory-table"
+                  isTop
+                  paginationProps={paginationProps}
                 />
-              </PaginationToolbarItem>
+              </ToolbarItem>
             </ToolbarContent>
           </Toolbar>
           {table}
+          <SimplePagination
+            idPrefix="advisory-table"
+            isTop
+            isCompact
+            paginationProps={paginationProps}
+          />
         </div>
       </PageSection>
     </>

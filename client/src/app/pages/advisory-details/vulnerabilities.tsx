@@ -1,3 +1,8 @@
+import React from "react";
+import { NavLink } from "react-router-dom";
+
+import dayjs from "dayjs";
+
 import {
   Card,
   CardBody,
@@ -7,29 +12,34 @@ import {
   Label,
   List,
   ListItem,
+  Toolbar,
   ToolbarContent,
+  ToolbarItem,
 } from "@patternfly/react-core";
 import {
   ExpandableRowContent,
-  Td as PFTd,
-  Tr as PFTr,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from "@patternfly/react-table";
-import React from "react";
-import { NavLink } from "react-router-dom";
 
-import dayjs from "dayjs";
-
-import { Vulnerability } from "@app/api/models";
 import { RENDER_DATE_FORMAT } from "@app/Constants";
-
+import { Vulnerability } from "@app/api/models";
+import { FilterToolbar, FilterType } from "@app/components/FilterToolbar";
+import { SimplePagination } from "@app/components/SimplePagination";
+import {
+  ConditionalTableBody,
+  TableHeaderContentWithControls,
+  TableRowContentWithControls,
+} from "@app/components/TableControls";
 import { NotesMarkdown } from "@app/components/csaf/notes-markdown";
 import { ProductStatusTree } from "@app/components/csaf/product-status-tree";
 import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
-import {
-  ConditionalTableBody,
-  FilterType,
-  useClientTableBatteries,
-} from "@carlosthe19916-latest/react-table-batteries";
+import { useLocalTableControls } from "@app/hooks/table-controls";
+
 import { Remediations } from "./remediations";
 
 interface VulnerabilitiesProps {
@@ -43,7 +53,8 @@ export const Vulnerabilities: React.FC<VulnerabilitiesProps> = ({
   fetchError,
   vulnerabilities,
 }) => {
-  const tableControls = useClientTableBatteries({
+  const tableControls = useLocalTableControls({
+    tableName: "vulnerability-table",
     persistTo: "sessionStorage",
     idProperty: "cve",
     items: vulnerabilities,
@@ -57,77 +68,74 @@ export const Vulnerabilities: React.FC<VulnerabilitiesProps> = ({
       cwe: "CWE",
     },
     hasActionsColumn: true,
-    filter: {
-      isEnabled: true,
-      filterCategories: [
-        {
-          key: "cve",
-          title: "ID",
-          type: FilterType.search,
-          placeholderText: "Search by ID...",
-          getItemValue: (item) => item.cve || "",
-        },
-      ],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: ["cve", "discovery", "release"],
-      getSortValues: (vuln) => ({
-        cve: vuln?.cve || "",
-        discovery: vuln ? dayjs(vuln.discovery_date).millisecond() : 0,
-        release: vuln ? dayjs(vuln.release_date).millisecond() : 0,
-      }),
-    },
-    pagination: { isEnabled: true },
-    expansion: {
-      isEnabled: true,
-      variant: "single",
-      persistTo: "sessionStorage",
-    },
+    isFilterEnabled: true,
+    filterCategories: [
+      {
+        categoryKey: "cve",
+        title: "ID",
+        type: FilterType.search,
+        placeholderText: "Search by ID...",
+        getItemValue: (item) => item.cve || "",
+      },
+    ],
+    isSortEnabled: true,
+    sortableColumns: ["cve", "discovery", "release"],
+    getSortValues: (vuln) => ({
+      cve: vuln?.cve || "",
+      discovery: vuln ? dayjs(vuln.discovery_date).millisecond() : 0,
+      release: vuln ? dayjs(vuln.release_date).millisecond() : 0,
+    }),
+    isPaginationEnabled: true,
+    isExpansionEnabled: true,
+    expandableVariant: "single",
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    propHelpers: {
+      toolbarProps,
+      filterToolbarProps,
+      paginationToolbarItemProps,
+      paginationProps,
+      tableProps,
+      getThProps,
+      getTrProps,
+      getTdProps,
     },
-    expansion: { isCellExpanded },
+    expansionDerivedState: { isCellExpanded },
   } = tableControls;
 
   return (
     <>
-      <Toolbar>
+      <Toolbar {...toolbarProps}>
         <ToolbarContent>
-          <FilterToolbar id="project-toolbar" />
-          <PaginationToolbarItem>
-            <Pagination
-              variant="top"
-              isCompact
-              widgetId="projects-pagination-top"
+          <FilterToolbar showFiltersSideBySide {...filterToolbarProps} />
+          <ToolbarItem {...paginationToolbarItemProps}>
+            <SimplePagination
+              idPrefix="vulnerability-table"
+              isTop
+              paginationProps={paginationProps}
             />
-          </PaginationToolbarItem>
+          </ToolbarItem>
         </ToolbarContent>
       </Toolbar>
 
-      <Table aria-label="Projects table" className="vertical-aligned-table">
+      <Table
+        {...tableProps}
+        aria-label="Vulnerability table"
+        className="vertical-aligned-table"
+      >
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="cve" />
-            <Th columnKey="title" />
-            <Th columnKey="discovery" />
-            <Th columnKey="release" />
-            <Th columnKey="score" />
-            <Th columnKey="cwe" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "cve" })} />
+              <Th {...getThProps({ columnKey: "title" })} />
+              <Th {...getThProps({ columnKey: "discovery" })} />
+              <Th {...getThProps({ columnKey: "release" })} />
+              <Th {...getThProps({ columnKey: "score" })} />
+              <Th {...getThProps({ columnKey: "cwe" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
@@ -139,36 +147,46 @@ export const Vulnerabilities: React.FC<VulnerabilitiesProps> = ({
           {currentPageItems?.map((item, rowIndex) => {
             return (
               <Tbody key={item.cve}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <Td width={15} columnKey="cve">
-                    <NavLink to={`/cves/${item.cve}`}>{item.cve}</NavLink>
-                  </Td>
-                  <Td width={40} modifier="truncate" columnKey="title">
-                    {item.title}
-                  </Td>
-                  <Td width={10} columnKey="discovery">
-                    {dayjs(item.discovery_date).format(RENDER_DATE_FORMAT)}
-                  </Td>
-                  <Td width={10} columnKey="release">
-                    {dayjs(item.release_date).format(RENDER_DATE_FORMAT)}
-                  </Td>
-                  <Td width={15} columnKey="score">
-                    {item.scores.map((e, index) => (
-                      <SeverityRenderer
-                        key={index}
-                        variant="progress"
-                        score={e.cvss_v3.baseScore}
-                        severity={e.cvss_v3.baseSeverity}
-                      />
-                    ))}
-                  </Td>
-                  <Td width={10} columnKey="cwe">
-                    {item.cwe?.id || "N/A"}
-                  </Td>
+                <Tr {...getTrProps({ item })}>
+                  <TableRowContentWithControls
+                    {...tableControls}
+                    item={item}
+                    rowIndex={rowIndex}
+                  >
+                    <Td width={15} {...getTdProps({ columnKey: "cve" })}>
+                      <NavLink to={`/cves/${item.cve}`}>{item.cve}</NavLink>
+                    </Td>
+                    <Td
+                      width={40}
+                      modifier="truncate"
+                      {...getTdProps({ columnKey: "title" })}
+                    >
+                      {item.title}
+                    </Td>
+                    <Td width={10} {...getTdProps({ columnKey: "discovery" })}>
+                      {dayjs(item.discovery_date).format(RENDER_DATE_FORMAT)}
+                    </Td>
+                    <Td width={10} {...getTdProps({ columnKey: "release" })}>
+                      {dayjs(item.release_date).format(RENDER_DATE_FORMAT)}
+                    </Td>
+                    <Td width={15} {...getTdProps({ columnKey: "score" })}>
+                      {item.scores.map((e, index) => (
+                        <SeverityRenderer
+                          key={index}
+                          variant="progress"
+                          score={e.cvss_v3.baseScore}
+                          severity={e.cvss_v3.baseSeverity}
+                        />
+                      ))}
+                    </Td>
+                    <Td width={10} {...getTdProps({ columnKey: "cve" })}>
+                      {item.cwe?.id || "N/A"}
+                    </Td>
+                  </TableRowContentWithControls>
                 </Tr>
                 {isCellExpanded(item) ? (
-                  <PFTr isExpanded>
-                    <PFTd colSpan={7}>
+                  <Tr isExpanded>
+                    <Td colSpan={7}>
                       <ExpandableRowContent>
                         <Grid hasGutter>
                           <GridItem md={6}>
@@ -237,18 +255,19 @@ export const Vulnerabilities: React.FC<VulnerabilitiesProps> = ({
                           </GridItem>
                         </Grid>
                       </ExpandableRowContent>
-                    </PFTd>
-                  </PFTr>
+                    </Td>
+                  </Tr>
                 ) : null}
               </Tbody>
             );
           })}
         </ConditionalTableBody>
       </Table>
-      <Pagination
-        variant="bottom"
+      <SimplePagination
+        idPrefix="vulnerability-table"
+        isTop={false}
         isCompact
-        widgetId="projects-pagination-bottom"
+        paginationProps={paginationProps}
       />
     </>
   );

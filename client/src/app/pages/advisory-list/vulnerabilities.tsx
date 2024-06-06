@@ -3,6 +3,7 @@ import React from "react";
 import { Divider, Flex, FlexItem } from "@patternfly/react-core";
 
 import { Severity } from "@app/api/models";
+
 import { SeverityShield } from "./severity";
 
 interface VulnerabilitiesCountProps {

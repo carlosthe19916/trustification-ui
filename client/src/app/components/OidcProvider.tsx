@@ -1,9 +1,11 @@
 import React, { Suspense } from "react";
 import { AuthProvider, useAuth } from "react-oidc-context";
-import { oidcClientSettings } from "@app/oidc";
-import ENV from "@app/env";
-import { AppPlaceholder } from "./AppPlaceholder";
+
 import { initInterceptors } from "@app/axios-config";
+import ENV from "@app/env";
+import { oidcClientSettings } from "@app/oidc";
+
+import { AppPlaceholder } from "./AppPlaceholder";
 
 interface IOidcProviderProps {
   children: React.ReactNode;

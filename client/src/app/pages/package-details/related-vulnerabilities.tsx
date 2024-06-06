@@ -1,20 +1,23 @@
-import { Skeleton } from "@patternfly/react-core";
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-import { Td as PFTd } from "@patternfly/react-table";
+import { AxiosError } from "axios";
+import dayjs from "dayjs";
 
-import {
-  ConditionalTableBody,
-  useClientTableBatteries,
-} from "@carlosthe19916-latest/react-table-batteries";
+import { Skeleton } from "@patternfly/react-core";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 
 import { RENDER_DATE_FORMAT } from "@app/Constants";
 import { CveIndexed } from "@app/api/models";
+import { SimplePagination } from "@app/components/SimplePagination";
+import {
+  ConditionalTableBody,
+  TableHeaderContentWithControls,
+  TableRowContentWithControls,
+} from "@app/components/TableControls";
 import { SeverityRenderer } from "@app/components/csaf/severity-renderer";
+import { useLocalTableControls } from "@app/hooks/table-controls";
 import { useFetchCveIndexedById } from "@app/queries/cves";
-import { AxiosError } from "axios";
-import dayjs from "dayjs";
 
 interface RelatedVulnerabilitiesProps {
   vulnerabilities: { cve: string; severity: string }[];
@@ -23,7 +26,8 @@ interface RelatedVulnerabilitiesProps {
 export const RelatedVulnerabilities: React.FC<RelatedVulnerabilitiesProps> = ({
   vulnerabilities,
 }) => {
-  const tableControls = useClientTableBatteries({
+  const tableControls = useLocalTableControls({
+    tableName: "vulnerability-table",
     persistTo: "sessionStorage",
     idProperty: "cve",
     items: vulnerabilities,
@@ -35,65 +39,46 @@ export const RelatedVulnerabilities: React.FC<RelatedVulnerabilitiesProps> = ({
       datePublished: "Date published",
     },
     hasActionsColumn: true,
-    filter: {
-      isEnabled: true,
-      filterCategories: [],
-    },
-    sort: {
-      isEnabled: true,
-      sortableColumns: [],
-    },
-    pagination: { isEnabled: true },
-    expansion: {
-      isEnabled: false,
-      variant: "single",
-      persistTo: "state",
-    },
+    isFilterEnabled: true,
+    filterCategories: [],
+    isSortEnabled: true,
+    sortableColumns: [],
+    isPaginationEnabled: true,
+    isExpansionEnabled: true,
+    expandableVariant: "single",
   });
 
   const {
     currentPageItems,
     numRenderedColumns,
-    components: {
-      Table,
-      Thead,
-      Tr,
-      Th,
-      Tbody,
-      Td,
-      Toolbar,
-      FilterToolbar,
-      PaginationToolbarItem,
-      Pagination,
+    propHelpers: {
+      toolbarProps,
+      filterToolbarProps,
+      paginationToolbarItemProps,
+      paginationProps,
+      tableProps,
+      getThProps,
+      getTrProps,
+      getTdProps,
     },
-    expansion: { isCellExpanded, setCellExpanded },
+    expansionDerivedState: { isCellExpanded },
   } = tableControls;
 
   return (
     <>
-      {/* <Toolbar>
-        <ToolbarContent>
-          <FilterToolbar id="related-products-toolbar" />
-          <PaginationToolbarItem>
-            <Pagination
-              variant="top"
-              isCompact
-              widgetId="related-products-pagination-top"
-            />
-          </PaginationToolbarItem>
-        </ToolbarContent>
-      </Toolbar> */}
-
       <Table
-        aria-label="Vulnerabilities table"
+        {...tableProps}
+        aria-label="Vulnerability table"
         className="vertical-aligned-table"
       >
         <Thead>
-          <Tr isHeaderRow>
-            <Th columnKey="id" />
-            <Th columnKey="description" />
-            <Th columnKey="cvss" />
-            <Th columnKey="datePublished" />
+          <Tr>
+            <TableHeaderContentWithControls {...tableControls}>
+              <Th {...getThProps({ columnKey: "id" })} />
+              <Th {...getThProps({ columnKey: "description" })} />
+              <Th {...getThProps({ columnKey: "cvss" })} />
+              <Th {...getThProps({ columnKey: "datePublished" })} />
+            </TableHeaderContentWithControls>
           </Tr>
         </Thead>
         <ConditionalTableBody
@@ -105,60 +90,74 @@ export const RelatedVulnerabilities: React.FC<RelatedVulnerabilitiesProps> = ({
           {currentPageItems?.map((item, rowIndex) => {
             return (
               <Tbody key={item.cve} isExpanded={isCellExpanded(item)}>
-                <Tr item={item} rowIndex={rowIndex}>
-                  <TdWrapper cveId={item.cve}>
-                    {(cve, isFetching, fetchError) => (
-                      <>
-                        {isFetching ? (
-                          <PFTd width={100} colSpan={4}>
-                            <Skeleton />
-                          </PFTd>
-                        ) : (
-                          <>
-                            <Td width={15} columnKey="id">
-                              <NavLink to={`/cves/${item.cve}`}>
-                                {item.cve}
-                              </NavLink>
+                <Tr {...getTrProps({ item })}>
+                  <TableRowContentWithControls
+                    {...tableControls}
+                    item={item}
+                    rowIndex={rowIndex}
+                  >
+                    <TdWrapper cveId={item.cve}>
+                      {(cve, isFetching, fetchError) => (
+                        <>
+                          {isFetching ? (
+                            <Td width={100} colSpan={4}>
+                              <Skeleton />
                             </Td>
-                            <Td
-                              width={50}
-                              modifier="truncate"
-                              columnKey="description"
-                            >
-                              {cve?.document.document.descriptions.join(". ")}
-                            </Td>
-                            <Td width={15} modifier="truncate" columnKey="cvss">
-                              {cve && (
-                                <SeverityRenderer
-                                  variant="progress"
-                                  score={cve.score}
-                                />
-                              )}
-                            </Td>
-                            <Td
-                              width={15}
-                              modifier="truncate"
-                              columnKey="datePublished"
-                            >
-                              {dayjs(
-                                cve?.document.document.date_published
-                              ).format(RENDER_DATE_FORMAT)}
-                            </Td>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </TdWrapper>
+                          ) : (
+                            <>
+                              <Td
+                                width={15}
+                                {...getTdProps({ columnKey: "id" })}
+                              >
+                                <NavLink to={`/cves/${item.cve}`}>
+                                  {item.cve}
+                                </NavLink>
+                              </Td>
+                              <Td
+                                width={50}
+                                modifier="truncate"
+                                {...getTdProps({ columnKey: "description" })}
+                              >
+                                {cve?.document.document.descriptions.join(". ")}
+                              </Td>
+                              <Td
+                                width={15}
+                                modifier="truncate"
+                                {...getTdProps({ columnKey: "cvss" })}
+                              >
+                                {cve && (
+                                  <SeverityRenderer
+                                    variant="progress"
+                                    score={cve.score}
+                                  />
+                                )}
+                              </Td>
+                              <Td
+                                width={15}
+                                modifier="truncate"
+                                {...getTdProps({ columnKey: "datePublished" })}
+                              >
+                                {dayjs(
+                                  cve?.document.document.date_published
+                                ).format(RENDER_DATE_FORMAT)}
+                              </Td>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </TdWrapper>
+                  </TableRowContentWithControls>
                 </Tr>
               </Tbody>
             );
           })}
         </ConditionalTableBody>
       </Table>
-      <Pagination
-        variant="bottom"
+      <SimplePagination
+        idPrefix="vulnerability-table"
+        isTop={false}
         isCompact
-        widgetId="related-products-pagination-bottom"
+        paginationProps={paginationProps}
       />
     </>
   );
